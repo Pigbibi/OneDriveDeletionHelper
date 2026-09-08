@@ -37,7 +37,7 @@ Direct runtime components:
 
 Build and test tools include Gradle (Apache License 2.0), Android Gradle Plugin (Apache License 2.0), JUnit 4 (Eclipse Public License 1.0), Hamcrest (BSD 3-Clause), and Robolectric (MIT). Test tools are not intentionally bundled as runtime features.
 
-The Gradle wrapper scripts retain their original copyright and license headers. Dependency license resources are retained where packaged; only duplicate non-license dependency/index resources are excluded. The application is not endorsed by Microsoft, Google, or Xiaomi. OneDrive and other product names belong to their respective owners.
+The Gradle wrapper scripts retain their original copyright and license headers. Dependency license resources are retained where packaged; only duplicate non-license dependency/index resources are excluded. The application is not endorsed by Microsoft, Google, or device manufacturers. OneDrive and other product names belong to their respective owners.
 
 
 Microsoft Identity libraries (Microsoft Corporation) — MIT

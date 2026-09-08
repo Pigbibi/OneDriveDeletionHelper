@@ -6,7 +6,7 @@ PhotoKeep 是一个独立的 Android 开源工具，由手机直接连接 Micros
 
 [下载 v0.1.0 初版 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.1.0) · [安装与微软连接教程](docs/SETUP.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [MIT 协议](LICENSE)
 
-> **这是预发布初版。** 需要在微软注册自己的应用并在手机授权，安装 APK 后不能跳过此步骤。没有内置共享客户端标识或账号。真实小米 14T、Google Photos 删除表现及 OneDrive 账号的完整联调尚待验证，请先用测试照片。
+> **这是预发布初版。** 需要在微软注册自己的应用并在手机授权，安装 APK 后不能跳过此步骤。没有内置共享客户端标识或账号。真实 Android 设备、系统相册及 Google Photos 的删除表现，以及 OneDrive 账号的完整联调尚待验证，请先用测试照片。
 
 <p>
   <img src="docs/screenshots/overview.png" width="240" alt="总览：连接 OneDrive 和真实空状态统计" />
@@ -77,6 +77,6 @@ Microsoft Graph 的 `Files.ReadWrite` 权限本身包含读写能力，并非“
 
 ## 开源
 
-MIT License，Copyright (c) 2026 **Pigbibi**。第三方组件保留各自许可证，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。这是独立项目，与 Microsoft、Google、小米无隶属关系。
+MIT License，Copyright (c) 2026 **Pigbibi**。第三方组件保留各自许可证，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。这是独立项目，与 Microsoft、Google 或设备厂商无隶属关系。
 
 PhotoKeep is an Android companion for OneDrive camera backup. It tracks local photo changes and recycles verified cloud counterparts, without replacing uploads or requiring a backend. Missing files require manual review; optional automatic cleanup is limited to explicit Android trash records.

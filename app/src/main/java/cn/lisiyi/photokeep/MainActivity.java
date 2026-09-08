@@ -220,8 +220,8 @@ public final class MainActivity extends Activity {
         action(body, state.automatic ? "自动清理：已开启" : "自动清理：关闭", false, this::autoDialog);
         text(body, "自动清理仅处理系统明确标记为回收站、连续两次检查且满 24 小时的文件。只是不见了的照片仍需手动确认。", 13, MUTED, false);
         action(body, "手机后台运行设置", false, () -> {
-            new AlertDialog.Builder(this).setTitle("小米手机后台运行")
-                    .setMessage("在手机设置中允许本应用后台自启动，并将省电策略设为无限制。允许通知以查看进度。系统仍可能推迟检查，打开应用可手动检查。")
+            new AlertDialog.Builder(this).setTitle("手机后台运行设置")
+                    .setMessage("在手机的应用设置中允许通知，并按需调整后台运行或电池优化限制。部分系统另有自启动选项，菜单名称因设备及系统版本而异。系统仍可能推迟检查，打开应用可手动检查。")
                     .setNegativeButton("知道了", null).setPositiveButton("打开应用设置", (d,w) -> startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())))).show();
         });
         gap(body, 24); section("04", "关于拾光");
