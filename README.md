@@ -1,12 +1,14 @@
 # 拾光清理 · PhotoKeep
 
+<img src="docs/branding/icon.svg" width="88" height="88" alt="PhotoKeep 图标：墨绿底色上的照片与云朵" />
+
 **保留 OneDrive 的自动备份，让手机上的清理跟上云端。**
 
 PhotoKeep 是一个独立的 Android 开源工具，由手机直接连接 Microsoft Graph。你继续使用 OneDrive 官方应用备份原图和视频，PhotoKeep 负责建立对应关系、检查删除，并将确认的云端文件移入回收站。无需自建服务器。
 
-[下载 v0.1.0 初版 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.1.0) · [安装与微软连接教程](docs/SETUP.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [MIT 协议](LICENSE)
+[下载 v0.2.0 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.2.0) · [安装与微软连接教程](docs/SETUP.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [MIT 协议](LICENSE)
 
-> **这是预发布初版。** 需要在微软注册自己的应用并在手机授权，安装 APK 后不能跳过此步骤。没有内置共享客户端标识或账号。真实 Android 设备、系统相册及 Google Photos 的删除表现，以及 OneDrive 账号的完整联调尚待验证，请先用测试照片。
+> **这是预发布初版。** 发布 APK 已内置项目的公开微软应用编号，安装后点击“登录 OneDrive”并授权即可；普通用户无需注册应用。工作/学校账号可能需要组织管理员批准。真实 Android 设备、系统相册及 Google Photos 的删除表现，以及 OneDrive 账号的完整联调尚待验证，请先用测试照片。
 
 <p>
   <img src="docs/screenshots/overview.png" width="240" alt="总览：连接 OneDrive 和真实空状态统计" />
@@ -18,6 +20,8 @@ PhotoKeep 是一个独立的 Android 开源工具，由手机直接连接 Micros
 
 ## 支持什么
 
+- 内置微软 OAuth 登录；普通用户直接授权，自定义 Client ID 仅保留在高级设置。
+- 原创矢量图标，适配 Android 圆形、圆角桌面图标及 Android 13+ 主题图标。
 - 选择内部存储的多个照片目录，如 `DCIM/Camera/`、`Pictures/`、截图；包含所选目录的子目录。
 - 选择多个 OneDrive 照片目录，递归读取并处理分页。手机和云端目录结构不必一致，可保留现有年月分类。
 - 检查本地照片和视频的内容校验值；移动、改名、仍有相同本地副本时保留云端文件。
@@ -47,8 +51,8 @@ PhotoKeep 是一个独立的 Android 开源工具，由手机直接连接 Micros
 
 ## 安装与开始
 
-1. 从 Releases 下载 `PhotoKeep-0.1.0.apk`，在 Android 11 或更新版本安装。允许该安装来源安装应用。
-2. 按[连接教程](docs/SETUP.zh-CN.md)完成微软应用注册、Android 平台配置和 `Files.ReadWrite` 委托授权。
+1. 从 Releases 下载 `PhotoKeep-0.2.0.apk`，在 Android 11 或更新版本安装。允许该安装来源安装应用。
+2. 点击 **登录 OneDrive**，在微软官方页面完成登录和授权；详见[连接教程](docs/SETUP.zh-CN.md)。
 3. 在应用里选择全部照片权限、手机目录和 OneDrive 目录。
 4. 连接 Wi-Fi，建立首次对应关系。先用几张测试照片检查“删除、移动、改名、保留副本”的行为。
 5. 在清理预览中确认测试结果，再按需要启用定期检查和自动清理。
@@ -71,7 +75,7 @@ Microsoft Graph 的 `Files.ReadWrite` 权限本身包含读写能力，并非“
 
 调试安装包位于 `app/build/outputs/apk/debug/app-debug.apk`。Android Studio 可以直接打开项目根目录。SDK 位置使用 `ANDROID_HOME` 或本机未跟踪的 `local.properties` 配置。
 
-发布包构建与密钥管理见[发布说明](docs/RELEASING.md)。所有账号授权、云端内容下载和真实删除测试均需使用自己的测试目录；自动化测试不访问真实 Microsoft 账号。
+发布包构建与密钥管理见[发布说明](docs/RELEASING.md)。自行编译时，APK 签名与项目发布包不同，须按[开发者教程](docs/MICROSOFT-APP.md)配置自己的微软应用；普通用户应下载安装发布包。所有账号授权、云端内容下载和真实删除测试均需使用自己的测试目录；自动化测试不访问真实 Microsoft 账号。
 
 核心代码：`core/` 负责匹配、删除策略和删除前核对；`data/` 负责媒体读取、微软认证、Graph 与本地保存；`sync/` 负责检查流程和调度。界面使用原生 Android Views，设计约定见 [DESIGN.md](docs/DESIGN.md)。
 

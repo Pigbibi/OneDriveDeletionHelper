@@ -21,7 +21,10 @@ public final class Store {
             JSONObject j = new JSONObject(new String(file.readFully(), StandardCharsets.UTF_8));
             if (j.getInt("version") != 1) throw new AppFailure("STATE");
             State s = new State();
-            s.clientId = j.getString("clientId"); s.accountId = j.getString("accountId");
+            s.accountId = j.getString("accountId");
+            String savedClientId = j.getString("clientId");
+            // Retain the exact registration used by existing accounts. Only unconfigured installs adopt the bundled one.
+            if (!savedClientId.isEmpty() || !s.accountId.isEmpty()) s.clientId = savedClientId;
             s.accountLabel = j.getString("accountLabel"); s.driveId = j.getString("driveId");
             s.mediaVersion = j.getString("mediaVersion"); s.automatic = j.getBoolean("automatic");
             s.scheduled = j.getBoolean("scheduled"); s.intervalHours = j.getInt("intervalHours");

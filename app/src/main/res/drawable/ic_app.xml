@@ -1,6 +1,12 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#176B55" android:pathData="M0,0h108v108h-108z" />
-    <path android:fillColor="#F4F5F0" android:pathData="M30,28h48v52h-48z" />
-    <path android:fillColor="#B7D2B6" android:pathData="M34,70l13,-19 10,12 8,-9 9,16z" />
-    <path android:fillColor="#D9AF5A" android:pathData="M65,37a5,5 0,1 0,0 10a5,5 0,1 0,0 -10" />
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Single-colour notification mark; the launcher uses separate adaptive layers. -->
+    <group android:scaleX="0.88" android:scaleY="0.88" android:pivotX="54" android:pivotY="54">
+    <group android:rotation="-8" android:pivotX="51" android:pivotY="53">
+        <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd"
+            android:pathData="M36,29H67Q73,29 73,35V71Q73,77 67,77H36Q30,77 30,71V35Q30,29 36,29ZM36,36V65H67V36Z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M36,64L47,49L55,59L61,53L67,61V67H36ZM58,40a4,4 0,1 0,0 8a4,4 0,1 0,0 -8" />
+    </group>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M57,79C51,79 47,75 47,70C47,65 51,61 56,61C58,54 63,51 69,53C74,54 77,58 77,63C82,63 85,66 85,71C85,76 81,79 76,79Z" />
+    </group>
 </vector>

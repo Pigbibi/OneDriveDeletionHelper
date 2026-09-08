@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import os
+import re
 from pathlib import Path
 import secrets
 import shutil
@@ -12,6 +13,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--init-key", action="store_true", help="Create a new private signing key if none exists")
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
+version = re.search(r'versionName\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)"', (root / "app/build.gradle.kts").read_text()).group(1)
+# Validate public registration before touching private signing material or generating an APK.
+subprocess.run([str(root / "gradlew"), ":app:verifyMicrosoftRegistration", "--console=plain"], cwd=root, check=True)
 private = Path(os.environ.get("PHOTOKEEP_SIGNING_DIR", str(Path.home() / ".local/share/photokeep/signing"))).resolve()
 if private == root or root in private.parents:
     raise SystemExit("Signing material must be stored outside the project.")
@@ -45,7 +49,7 @@ if not password_file.exists():
 env["PHOTOKEEP_STORE_PASSWORD"] = password_file.read_text().strip()
 env["PHOTOKEEP_KEYSTORE"] = str(key)
 subprocess.run([str(root / "gradlew"), ":app:testDebugUnitTest", ":app:lintRelease", ":app:assembleRelease", "--console=plain"], cwd=root, env=env, check=True)
-artifact = root / "dist/PhotoKeep-0.1.0.apk"
+artifact = root / f"dist/PhotoKeep-{version}.apk"
 artifact.parent.mkdir(exist_ok=True)
 shutil.copyfile(root / "app/build/outputs/apk/release/app-release.apk", artifact)
 digest = hashlib.sha256(artifact.read_bytes()).hexdigest()

@@ -39,7 +39,7 @@ public final class Auth {
         currentId = clientId;
         new Handler(Looper.getMainLooper()).post(() -> {
             try {
-                if (!clientId.matches("[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")) throw new AppFailure("CONFIG");
+                if (!State.validClientId(clientId)) throw new AppFailure("CONFIG");
                 JSONObject config = new JSONObject().put("client_id", clientId).put("redirect_uri", redirect(context))
                         .put("account_mode", "SINGLE").put("authorization_user_agent", "BROWSER")
                         .put("broker_redirect_uri_registered", false)

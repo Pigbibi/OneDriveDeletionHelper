@@ -1,4 +1,14 @@
+import java.util.Properties
+
 plugins { id("com.android.application") }
+val registration = Properties().apply {
+    rootProject.file("config/microsoft.properties").inputStream().use { load(it) }
+}
+val microsoftClientId = providers.gradleProperty("photokeepClientId")
+    .orElse(registration.getProperty("clientId", "")).get().trim().lowercase()
+val validClientId = microsoftClientId.matches(Regex("[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}")) &&
+    microsoftClientId != "00000000-0000-0000-0000-000000000000"
+require(microsoftClientId.isEmpty() || validClientId) { "Invalid public Microsoft client ID; see docs/MICROSOFT-APP.md." }
 android {
     namespace = "cn.lisiyi.photokeep"
     compileSdk = 37
@@ -6,9 +16,11 @@ android {
         applicationId = "cn.lisiyi.photokeep"
         minSdk = 30
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
+        buildConfigField("String", "MICROSOFT_CLIENT_ID", "\"$microsoftClientId\"")
     }
+    buildFeatures { buildConfig = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -28,6 +40,13 @@ android {
     }
     buildTypes.getByName("release") { isMinifyEnabled = false; isDebuggable = false }
 }
+val verifyMicrosoftRegistration by tasks.registering {
+    inputs.property("microsoftClientId", microsoftClientId)
+    doLast {
+        check(validClientId) { "Release requires PhotoKeep's registered Microsoft client ID; see docs/MICROSOFT-APP.md." }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(verifyMicrosoftRegistration) }
 dependencies {
     // Official Microsoft login handles browser authorization and its encrypted token cache.
     implementation("com.microsoft.identity.client:msal:8.4.2")

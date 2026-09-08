@@ -125,9 +125,10 @@ public final class MainActivity extends Activity {
         hero.addView(row);
         gap(body, 24);
         boolean connected = !state.accountId.isEmpty();
-        String primary = !connected ? "连接 OneDrive" : state.folders.isEmpty() || state.cloudRoots.isEmpty() ? "选择管理目录" : state.lastScan == 0 ? "建立首次对应关系" : "立即检查照片";
+        String primary = !connected ? "登录 OneDrive" : state.folders.isEmpty() || state.cloudRoots.isEmpty() ? "选择管理目录" : state.lastScan == 0 ? "建立首次对应关系" : "立即检查照片";
         Button start = action(body, primary, true, () -> {
-            if (!connected || state.folders.isEmpty() || state.cloudRoots.isEmpty()) { page = 2; refresh(); }
+            if (!connected) login();
+            else if (state.folders.isEmpty() || state.cloudRoots.isEmpty()) { page = 2; refresh(); }
             else if (!LocalScanner.permitted(this)) permissions();
             else { selected.clear(); Scheduler.scan(this, Set.of(), 0); toast("已加入检查队列，连接 Wi-Fi 后运行"); }
         });
@@ -201,7 +202,7 @@ public final class MainActivity extends Activity {
         section("01", "连接 OneDrive");
         text(body, state.accountId.isEmpty() ? "通过微软官方登录页面授权。" : "已连接：" + state.accountLabel, 14, MUTED, false);
         action(body, state.accountId.isEmpty() ? "登录 OneDrive" : "重新授权", true, this::login);
-        action(body, "首次连接设置", false, this::clientDialog);
+        action(body, "高级连接设置", false, this::advancedConnection);
         if (!state.accountId.isEmpty()) action(body, "断开本应用的连接", false, this::signOut);
         gap(body, 24); section("02", "选择照片目录");
         text(body, "支持手机内部存储的相机、Pictures、截图等目录。云端目录可以继续按年月存放。", 14, MUTED, false);
@@ -229,7 +230,7 @@ public final class MainActivity extends Activity {
         action(body, "隐私说明", false, () -> guide("privacy.html", "隐私说明"));
         action(body, "开源许可证", false, () -> guide("licenses.txt", "开源许可证"));
         action(body, "GitHub 开源项目  →", false, () -> open("https://github.com/Pigbibi/OneDriveDeletionHelper"));
-        gap(body, 10); text(body, "PhotoKeep 0.1.0 · MIT License\nCopyright © 2026 Pigbibi\n独立开源项目，与 Microsoft、Google 无隶属关系。", 12, MUTED, false);
+        gap(body, 10); text(body, "PhotoKeep " + BuildConfig.VERSION_NAME + " · MIT License\nCopyright © 2026 Pigbibi\n独立开源项目，与 Microsoft、Google 无隶属关系。", 12, MUTED, false);
     }
     private void confirmRecycle() {
         if (selected.isEmpty()) { toast("先勾选需要清理的文件"); return; }
@@ -239,38 +240,72 @@ public final class MainActivity extends Activity {
                 .setMessage("请确认这些照片是你主动删除的，而非移动、隐藏或释放手机空间。\n\n应用会重新检查手机，并读取云端原文件核对内容。确认一致后移入 OneDrive 回收站；不会清空回收站。")
                 .setNegativeButton("再看看", null).setPositiveButton("确认并核对内容", (d,w) -> { Scheduler.scan(this, ids, previewTime); selected.clear(); }).show();
     }
+    private void advancedConnection() {
+        if (working || loading) { toast("请等待当前操作完成"); return; }
+        LinearLayout layout = column(); layout.setPadding(dp(24), dp(8), dp(24), dp(8));
+        boolean bundled = state.clientId.equalsIgnoreCase(BuildConfig.MICROSOFT_CLIENT_ID);
+        text(layout, bundled ? "当前使用应用内置连接。通常无需修改。" : "当前使用自定义连接。升级时会保留原有配置。", 14, MUTED, false);
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("高级连接设置").setView(layout)
+                .setNegativeButton("关闭", null).create();
+        action(layout, "自定义 Client ID", false, () -> { dialog.dismiss(); clientDialog(); });
+        Button restore = action(layout, "恢复默认连接", false, () -> {
+            dialog.dismiss(); changeConnection(BuildConfig.MICROSOFT_CLIENT_ID);
+        });
+        restore.setEnabled(!bundled && State.validClientId(BuildConfig.MICROSOFT_CLIENT_ID));
+        dialog.show();
+    }
+    private void changeConnection(String id) {
+        if (working || loading) { toast("请等待当前操作完成"); return; }
+        if (state.clientId.equalsIgnoreCase(id)) return;
+        new AlertDialog.Builder(this).setTitle("切换连接配置？")
+                .setMessage("切换后需要重新登录并选择 OneDrive 目录，后台检查和自动清理会关闭，照片对应关系会重建。手机和云端照片不会删除。")
+                .setNegativeButton("取消", null).setPositiveButton("切换", (d,w) -> {
+                    if (working || loading) { toast("请等待当前操作完成"); return; }
+                    mutate(s -> s.changeClientId(id));
+                }).show();
+    }
     private void clientDialog() {
         LinearLayout layout = column(); layout.setPadding(dp(24), dp(8), dp(24), 0);
-        text(layout, "第一次需要在微软注册自己的应用。将公开的 Application (client) ID 填在这里，不需要客户端密码。", 14, MUTED, false);
-        EditText input = new EditText(this); input.setSingleLine(true); input.setHint("Application (client) ID"); input.setContentDescription("微软应用公开标识"); input.setText(state.clientId); layout.addView(input);
+        text(layout, "仅供自行注册微软应用或编译的用户使用。普通用户无需填写。这里只接受公开应用 ID，不接受客户端密码。", 14, MUTED, false);
+        EditText input = new EditText(this); input.setSingleLine(true); input.setHint("Application (client) ID"); input.setContentDescription("微软应用公开标识");
+        if (!state.clientId.equalsIgnoreCase(BuildConfig.MICROSOFT_CLIENT_ID)) input.setText(state.clientId);
+        layout.addView(input);
         try {
             text(layout, "注册 Android 平台时使用下面的信息：", 13, MUTED, false);
             TextView registration = text(layout, "包名：" + getPackageName() + "\n签名哈希：" + Auth.signature(this), 12, INK, false); registration.setTextIsSelectable(true);
             action(layout, "复制包名与签名哈希", false, () -> { try { copy(getPackageName() + "\n" + Auth.signature(this)); } catch (AppFailure e) { toast(e.getMessage()); } });
         } catch (AppFailure e) { text(layout, e.getMessage(), 13, MUTED, false); }
-        new AlertDialog.Builder(this).setTitle("首次连接设置").setView(layout).setNeutralButton("查看教程", (d,w) -> guide("guide.html", "首次连接教程"))
-                .setNegativeButton("取消", null).setPositiveButton("保存", (d,w) -> {
-                    String id = input.getText().toString().trim();
-                    if (!id.matches("[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")) { toast("请输入有效的公开应用 ID"); return; }
-                    mutate(s -> { if (!s.clientId.equals(id)) { s.clientId = id; s.accountId = ""; s.accountLabel = ""; s.driveId = ""; s.cloudRoots.clear(); s.resetMapping(); } });
-                }).show();
+        ScrollView scroll = new ScrollView(this); scroll.addView(layout);
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("自定义 Client ID").setView(scroll)
+                .setNeutralButton("开发者教程", (d,w) -> open("https://github.com/Pigbibi/OneDriveDeletionHelper/blob/main/docs/MICROSOFT-APP.md"))
+                .setNegativeButton("取消", null).setPositiveButton("保存", null).create();
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String id = input.getText().toString().trim();
+            if (!State.validClientId(id)) { input.setError("请输入有效的公开应用 ID"); return; }
+            dialog.dismiss(); changeConnection(id);
+        }));
+        dialog.show();
     }
     private void login() {
         if (working || loading) { toast("请等待检查完成"); return; }
-        if (state.clientId.isEmpty()) { clientDialog(); return; }
+        if (!State.validClientId(state.clientId)) {
+            new AlertDialog.Builder(this).setTitle("此安装包暂未开放登录")
+                    .setMessage("请从项目发布页下载已配置登录的版本。普通用户无需注册微软应用。")
+                    .setNegativeButton("知道了", null).setPositiveButton("前往下载", (d,w) -> open("https://github.com/Pigbibi/OneDriveDeletionHelper/releases")).show();
+            return;
+        }
+        final String loginClientId = state.clientId;
         loading = true; render();
-        Auth.get(this, state.clientId).whenComplete((app, error) -> runOnUiThread(() -> {
-            loading = false;
+        Auth.get(this, loginClientId).whenComplete((app, error) -> runOnUiThread(() -> {
             if (isDestroyed()) return;
-            if (error != null) { toast("请检查首次连接设置中的应用注册信息"); refresh(); return; }
+            if (error != null) { loading = false; toast("连接暂时不可用，请稍后重试或更新应用"); refresh(); return; }
             AuthenticationCallback callback = new AuthenticationCallback() {
-                @Override public void onSuccess(IAuthenticationResult result) { runOnUiThread(() -> mutate(s -> {
-                    String id = result.getAccount().getId();
-                    if (!s.accountId.equals(id)) { s.cloudRoots.clear(); s.driveId = ""; s.resetMapping(); }
-                    s.accountId = id; s.accountLabel = result.getAccount().getUsername(); s.lastMessage = "连接成功，请选择手机和 OneDrive 照片目录。";
-                })); }
-                @Override public void onError(MsalException exception) { runOnUiThread(() -> { toast("登录未完成，请检查注册信息或稍后重试"); refresh(); }); }
-                @Override public void onCancel() { runOnUiThread(() -> { toast("已取消登录"); refresh(); }); }
+                @Override public void onSuccess(IAuthenticationResult result) { runOnUiThread(() -> {
+                    loading = false;
+                    mutate(s -> s.completeLogin(loginClientId, result.getAccount().getId(), result.getAccount().getUsername()));
+                }); }
+                @Override public void onError(MsalException exception) { runOnUiThread(() -> { loading = false; toast("登录未完成，请检查网络及账号授权，或稍后重试"); refresh(); }); }
+                @Override public void onCancel() { runOnUiThread(() -> { loading = false; toast("已取消登录"); refresh(); }); }
             };
             app.getCurrentAccountAsync(new ISingleAccountPublicClientApplication.CurrentAccountCallback() {
                 @Override public void onAccountLoaded(IAccount account) {
@@ -283,9 +318,10 @@ public final class MainActivity extends Activity {
         }));
     }
     private void signOut() {
+        if (working || loading) { toast("请等待当前操作完成"); return; }
         new AlertDialog.Builder(this).setTitle("断开连接？").setMessage("本应用会停止检查并清除对应关系，OneDrive 中的照片保持原样。")
                 .setNegativeButton("取消", null).setPositiveButton("断开", (d,w) -> {
-                    if (working) { toast("请先停止检查"); return; }
+                    if (working || loading) { toast("请等待当前操作完成"); return; }
                     Auth.get(this, state.clientId).whenComplete((app, error) -> {
                         if (error != null) { runOnUiThread(() -> toast("断开未完成，请稍后重试")); return; }
                         app.signOut(new ISingleAccountPublicClientApplication.SignOutCallback() {
