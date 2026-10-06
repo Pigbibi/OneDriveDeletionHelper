@@ -133,8 +133,9 @@ public final class MainActivity extends Activity {
         hero.setPadding(dp(20), dp(24), dp(20), dp(20));
         LinearLayout row = new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout words = column();
-        text(words, "手机整理完，\n云端也清爽。", 24, onPrimaryContainer, true);
-        gap(words, 10); text(words, "沿用 OneDrive 备份，\n让清理跟上你的相册。", 15, onPrimaryContainer, false);
+        String headline = !connected ? "尚未连接 OneDrive" : state.folders.isEmpty() || state.cloudRoots.isEmpty() ? "尚未选择管理目录" : state.lastScan == 0 ? "尚未建立对应关系" : "OneDrive 已连接";
+        text(words, headline, 24, onPrimaryContainer, true);
+        gap(words, 10); text(words, state.lastScan > 0 ? "上次检查 " + new java.text.SimpleDateFormat("MM月dd日 HH:mm", Locale.CHINA).format(new Date(state.lastScan)) : "尚未检查", 15, onPrimaryContainer, false);
         row.addView(words, new LinearLayout.LayoutParams(0, -2, 1));
         if (getResources().getConfiguration().screenWidthDp >= 380 && getResources().getConfiguration().fontScale <= 1.15f)
             row.addView(new PhotoArtwork(this), new LinearLayout.LayoutParams(dp(108), dp(128)));
@@ -242,8 +243,6 @@ public final class MainActivity extends Activity {
         external(action(records, "打开 OneDrive", ROW, () -> open("https://onedrive.live.com/")));
     }
     private void settings() {
-        LinearLayout intro = column(); intro.setPadding(dp(4), 0, dp(4), 0); body.addView(intro);
-        text(intro, "一次连接，日常轻松整理。", 15, muted, false); gap(body, 24);
         section("连接 OneDrive");
         LinearLayout connection = panel(body, surface, 0, R_CARD); connection.setPadding(dp(16), dp(16), dp(16), dp(8));
         text(connection, state.accountId.isEmpty() ? "通过微软官方登录页面授权。" : "已连接：" + state.accountLabel, 15, state.accountId.isEmpty() ? muted : ink, !state.accountId.isEmpty());
