@@ -10,7 +10,6 @@ import android.graphics.drawable.*;
 import android.net.Uri;
 import android.os.*;
 import android.provider.Settings;
-import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.*;
 import android.widget.*;
@@ -25,7 +24,9 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public final class MainActivity extends Activity {
-    private static final int BG = Color.rgb(244,245,240), INK = Color.rgb(32,56,45), MUTED = Color.rgb(86,102,92), GREEN = Color.rgb(23,107,85), PALE = Color.rgb(228,236,220);
+    private static final int RADIUS = 12;
+    private static final int FILLED = 0, OUTLINED = 1, TEXT = 2, DANGER = 3, DANGER_OUTLINED = 4, ROW = 5, DANGER_ROW = 6;
+    private int bg, surface, surfaceHigh, ink, muted, outline, divider, primary, onPrimary, primaryContainer, onPrimaryContainer, error, onError, errorContainer, onErrorContainer, ripple;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Set<String> selected = new LinkedHashSet<>();
     private final ArrayDeque<CloudItem> cloudNavigation = new ArrayDeque<>();
@@ -40,6 +41,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) page = savedInstanceState.getInt("page", 0);
+        loadColors();
         refresh();
         WorkManager manager = WorkManager.getInstance(this);
         manualData = manager.getWorkInfosForUniqueWorkLiveData(Scheduler.MANUAL);
@@ -82,173 +84,199 @@ public final class MainActivity extends Activity {
         render();
     }
     private void render() {
-        LinearLayout root = column(); root.setBackgroundColor(BG);
+        LinearLayout root = column(); root.setBackgroundColor(bg);
+        LinearLayout nav = new LinearLayout(this); nav.setBackgroundColor(surfaceHigh); nav.setGravity(Gravity.CENTER_VERTICAL);
         root.setOnApplyWindowInsetsListener((v, insets) -> {
             android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom); return insets;
+            v.setPadding(bars.left, bars.top, bars.right, 0);
+            nav.setPadding(dp(12), dp(12), dp(12), dp(12) + bars.bottom); return insets;
         });
         ScrollView scroll = new ScrollView(this); scroll.setFillViewport(true);
-        body = column(); body.setPadding(dp(24), dp(24), dp(24), dp(24));
+        body = column(); body.setPadding(dp(20), dp(20), dp(20), dp(28));
         scroll.addView(body); root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
-        text(body, "PHOTO KEEP  /  PIGBIBI", 11, MUTED, false);
-        gap(body, 8);
-        text(body, page == 0 ? "拾光清理" : page == 1 ? "清理预览" : "连接与设置", 28, INK, true);
-        gap(body, 22);
+        TextView heading = text(body, page == 0 ? "拾光清理" : page == 1 ? "清理预览" : "连接与设置", 28, ink, true);
+        heading.setAccessibilityHeading(true);
+        gap(body, 20);
         if (working || loading) {
-            LinearLayout banner = panel(body, PALE);
-            text(banner, loading ? "正在读取，请稍候…" : workMessage, 14, INK, false);
-            if (working) action(banner, "停止并暂停后台检查", false, this::stopWork);
-            gap(body, 18);
+            LinearLayout banner = panel(body, primaryContainer, 0);
+            text(banner, loading ? "正在读取，请稍候…" : workMessage, 14, onPrimaryContainer, false);
+            banner.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+            if (working) action(banner, "停止并暂停后台检查", DANGER_OUTLINED, this::stopWork);
+            gap(body, 16);
         }
         if (page == 0) overview(); else if (page == 1) preview(); else settings();
-        LinearLayout nav = new LinearLayout(this); nav.setPadding(dp(16), dp(8), dp(16), dp(8));
         String[] tabs = {"总览", "预览", "设置"};
         for (int i = 0; i < tabs.length; i++) {
             final int target = i;
-            Button button = button(tabs[i], false, () -> { page = target; refresh(); });
-            button.setTextColor(i == page ? GREEN : MUTED); button.setBackground(background(i == page ? PALE : BG, 16));
-            button.setContentDescription(tabs[i] + (i == page ? "，当前页面" : ""));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, -2, 1); p.setMargins(dp(3), 0, dp(3), 0);
+            boolean current = i == page;
+            Button button = button(tabs[i], TEXT, () -> { page = target; refresh(); });
+            button.setTextColor(current ? onPrimaryContainer : muted);
+            button.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+            button.setBackground(new RippleDrawable(ColorStateList.valueOf(ripple), shape(current ? primaryContainer : Color.TRANSPARENT, 0), shape(Color.WHITE, 0)));
+            button.setContentDescription(tabs[i] + (current ? "，当前页面" : ""));
+            button.setSelected(current);
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, -2, 1); p.setMargins(dp(4), 0, dp(4), 0);
             nav.addView(button, p);
         }
+        View navTop = new View(this); navTop.setBackgroundColor(divider);
+        root.addView(navTop, new LinearLayout.LayoutParams(-1, dp(1)));
         root.addView(nav); setContentView(root); root.requestApplyInsets();
     }
     private void overview() {
-        LinearLayout hero = panel(body, PALE);
+        LinearLayout hero = panel(body, primaryContainer, 0);
+        hero.setPadding(dp(20), dp(20), dp(16), dp(20));
         LinearLayout row = new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout words = column();
-        text(words, "手机整理完，\n云端也清爽。", 25, INK, true);
-        gap(words, 14); text(words, "沿用 OneDrive 备份，\n让清理跟上你的相册。", 14, MUTED, false);
+        text(words, "手机整理完，\n云端也清爽。", 22, onPrimaryContainer, true);
+        gap(words, 10); text(words, "沿用 OneDrive 备份，\n让清理跟上你的相册。", 14, onPrimaryContainer, false);
         row.addView(words, new LinearLayout.LayoutParams(0, -2, 1));
         if (getResources().getConfiguration().screenWidthDp >= 380 && getResources().getConfiguration().fontScale <= 1.15f)
-            row.addView(new PhotoArtwork(this), new LinearLayout.LayoutParams(dp(108), dp(155)));
+            row.addView(new PhotoArtwork(this), new LinearLayout.LayoutParams(dp(104), dp(140)));
         hero.addView(row);
-        gap(body, 24);
+        gap(body, 20);
         boolean connected = !state.accountId.isEmpty();
-        String primary = !connected ? "登录 OneDrive" : state.folders.isEmpty() || state.cloudRoots.isEmpty() ? "选择管理目录" : state.lastScan == 0 ? "建立首次对应关系" : "立即检查照片";
-        Button start = action(body, primary, true, () -> {
+        String primaryLabel = !connected ? "登录 OneDrive" : state.folders.isEmpty() || state.cloudRoots.isEmpty() ? "选择管理目录" : state.lastScan == 0 ? "建立首次对应关系" : "立即检查照片";
+        Button start = action(body, primaryLabel, FILLED, () -> {
             if (!connected) login();
             else if (state.folders.isEmpty() || state.cloudRoots.isEmpty()) { page = 2; refresh(); }
             else if (!LocalScanner.permitted(this)) permissions();
             else { selected.clear(); Scheduler.scan(this, Set.of(), 0); toast("已加入检查队列，连接 Wi-Fi 后运行"); }
         });
         start.setEnabled(!working && !loading);
-        gap(body, 6); text(body, "仅通过 Wi-Fi 检查 · 首次检查不会删除文件", 12, MUTED, false);
-        gap(body, 26);
-        LinearLayout numbers = new LinearLayout(this);
-        metric(numbers, String.valueOf(state.localCount), "手机照片");
-        metric(numbers, String.valueOf(state.bindings.size()), "已建立关联");
-        metric(numbers, String.valueOf(state.bindings.values().stream().filter(Binding::candidate).count()), "待清理核对");
-        body.addView(numbers); gap(body, 26);
-        text(body, "当前状态", 17, INK, true); gap(body, 12);
-        statusLine("OneDrive", connected ? "已连接" : "尚未连接");
-        statusLine("照片目录", state.folders.size() + " 个手机目录 · " + state.cloudRoots.size() + " 个云端目录");
-        statusLine("后台检查", state.scheduled ? "约每 " + state.intervalHours + " 小时 · Wi-Fi" : "手动检查");
-        statusLine("自动清理", state.automatic ? "已开启 · 系统回收站文件" : "关闭 · 先预览确认");
-        gap(body, 20); text(body, state.lastMessage, 14, MUTED, false);
-        if (state.lastScan > 0) { gap(body, 6); text(body, "上次检查 " + new java.text.SimpleDateFormat("MM月dd日 HH:mm", Locale.CHINA).format(new Date(state.lastScan)), 12, MUTED, false); }
-        action(body, "查看清理预览  →", false, () -> { page = 1; refresh(); });
+        gap(body, 8); text(body, "仅通过 Wi-Fi 检查 · 首次检查不会删除文件", 13, muted, false).setGravity(Gravity.CENTER_HORIZONTAL);
+        gap(body, 24);
+        LinearLayout numbers = new LinearLayout(this); numbers.setBackground(shape(surface, divider)); numbers.setPadding(dp(4), dp(16), dp(4), dp(16));
+        metric(numbers, String.valueOf(state.localCount), "手机照片", false);
+        metric(numbers, String.valueOf(state.bindings.size()), "已建立关联", true);
+        metric(numbers, String.valueOf(state.bindings.values().stream().filter(Binding::candidate).count()), "待清理核对", true);
+        body.addView(numbers); gap(body, 24);
+        section("当前状态");
+        LinearLayout status = panel(body, surface, divider); status.setPadding(dp(16), dp(4), dp(16), dp(4));
+        statusLine(status, "OneDrive", connected ? "已连接" : "尚未连接", connected ? ink : muted, true);
+        statusLine(status, "照片目录", state.folders.size() + " 个手机目录 · " + state.cloudRoots.size() + " 个云端目录", ink, true);
+        statusLine(status, "后台检查", state.scheduled ? "约每 " + state.intervalHours + " 小时 · Wi-Fi" : "手动检查", ink, true);
+        statusLine(status, "自动清理", state.automatic ? "已开启 · 系统回收站文件" : "关闭 · 先预览确认", state.automatic ? error : ink, false);
+        gap(body, 16); text(body, state.lastMessage, 14, muted, false);
+        if (state.lastScan > 0) { gap(body, 4); text(body, "上次检查 " + new java.text.SimpleDateFormat("MM月dd日 HH:mm", Locale.CHINA).format(new Date(state.lastScan)), 13, muted, false); }
+        action(body, "查看清理预览  →", TEXT, () -> { page = 1; refresh(); });
     }
     private void preview() {
-        text(body, "核对后，移入 OneDrive 回收站。", 16, INK, false);
-        gap(body, 6); text(body, "清理前会读取云端原文件并核对内容，视频较大时需要等待。手机原文件和云端年月目录保持现状。", 14, MUTED, false);
-        gap(body, 18);
+        text(body, "核对后，移入 OneDrive 回收站。", 16, ink, false);
+        gap(body, 6); text(body, "清理前会读取云端原文件并核对内容，视频较大时需要等待。手机原文件和云端年月目录保持现状。", 14, muted, false);
+        gap(body, 20);
         List<Binding> candidates = new ArrayList<>();
         for (Binding b : state.bindings.values()) if (b.candidate()) candidates.add(b);
         if (candidates.isEmpty()) {
-            LinearLayout empty = panel(body, Color.WHITE);
-            empty.addView(new PhotoArtwork(this), new LinearLayout.LayoutParams(-1, dp(145)));
-            text(empty, state.lastScan == 0 ? "先认识你的照片" : "暂时没有待清理文件", 20, INK, true);
-            gap(empty, 8); text(empty, state.lastScan == 0 ? "完成目录设置并检查一次，之后的变化会出现在这里。" : "已经关联且符合条件的文件才会出现在这里。历史多余照片会保留。", 14, MUTED, false);
+            LinearLayout empty = panel(body, surface, divider); empty.setPadding(dp(20), dp(24), dp(20), dp(24));
+            empty.addView(new PhotoArtwork(this), new LinearLayout.LayoutParams(-1, dp(132)));
+            gap(empty, 12);
+            text(empty, state.lastScan == 0 ? "先认识你的照片" : "暂时没有待清理文件", 20, ink, true).setGravity(Gravity.CENTER_HORIZONTAL);
+            gap(empty, 8); text(empty, state.lastScan == 0 ? "完成目录设置并检查一次，之后的变化会出现在这里。" : "已经关联且符合条件的文件才会出现在这里。历史多余照片会保留。", 14, muted, false).setGravity(Gravity.CENTER_HORIZONTAL);
         } else {
-            text(body, candidates.size() + " 个文件需要核对", 17, INK, true);
+            section(candidates.size() + " 个文件需要核对");
             int count = 0;
             for (Binding b : candidates) {
                 if (++count > 100) break;
-                gap(body, 12);
-                LinearLayout card = panel(body, Color.WHITE);
-                CheckBox check = new CheckBox(this); check.setText(b.name); check.setTextSize(16); check.setTextColor(INK);
-                check.setButtonTintList(ColorStateList.valueOf(GREEN)); check.setMinHeight(dp(48)); check.setChecked(selected.contains(b.cloudId));
+                if (count > 1) gap(body, 10);
+                LinearLayout card = panel(body, surface, selected.contains(b.cloudId) ? error : divider);
+                card.setPadding(dp(8), dp(4), dp(16), dp(14));
+                CheckBox check = new CheckBox(this); check.setText(b.name); check.setTextSize(16); check.setTextColor(ink);
+                check.setButtonTintList(new ColorStateList(new int[][]{{android.R.attr.state_checked}, {}}, new int[]{error, muted}));
+                check.setMinHeight(dp(48)); check.setChecked(selected.contains(b.cloudId));
                 check.setEnabled(!working);
                 check.setOnCheckedChangeListener((button, checked) -> {
                     if (checked && selected.size() >= 10) { check.setChecked(false); toast("每次最多确认 10 个文件"); return; }
                     if (checked) selected.add(b.cloudId); else selected.remove(b.cloudId);
+                    card.setBackground(shape(surface, checked ? error : divider));
                     if (recycleButton != null) recycleButton.setText("核对并清理所选（" + selected.size() + "）");
                 });
                 card.addView(check);
-                text(card, b.status.equals("TRASHED") ? "手机系统回收站" : "手机中未找到 · 需要你确认", 13, GREEN, true);
-                gap(card, 6); text(card, b.cloudPath, 12, MUTED, false);
-                gap(card, 4); text(card, b.note + " · " + size(b.size), 12, MUTED, false);
+                LinearLayout details = column(); details.setPadding(dp(8), 0, 0, 0); card.addView(details);
+                boolean trashed = b.status.equals("TRASHED");
+                chip(details, trashed ? "手机系统回收站" : "手机中未找到 · 需要你确认", trashed ? primaryContainer : errorContainer, trashed ? onPrimaryContainer : onErrorContainer);
+                gap(details, 8); text(details, b.cloudPath, 13, muted, false);
+                gap(details, 2); text(details, b.note + " · " + size(b.size), 13, muted, false);
             }
-            if (candidates.size() > 100) text(body, "先显示 100 个，处理后继续显示其余文件。", 13, MUTED, false);
-            recycleButton = action(body, "核对并清理所选（" + selected.size() + "）", true, this::confirmRecycle);
+            if (candidates.size() > 100) { gap(body, 10); text(body, "先显示 100 个，处理后继续显示其余文件。", 13, muted, false); }
+            gap(body, 16);
+            LinearLayout confirm = panel(body, errorContainer, 0);
+            text(confirm, "移入 OneDrive 回收站前，会再次确认并核对内容。", 14, onErrorContainer, false);
+            recycleButton = action(confirm, "核对并清理所选（" + selected.size() + "）", DANGER, this::confirmRecycle);
             recycleButton.setEnabled(!working);
-            action(body, "保留所选文件", false, () -> mutate(s -> {
+            action(body, "保留所选文件", OUTLINED, () -> mutate(s -> {
                 for (String id : selected) { Binding b = s.bindings.get(id); if (b != null) { b.status = "IGNORED"; b.note = "用户选择保留，不再自动清理"; } }
                 selected.clear();
             }));
         }
-        gap(body, 22);
+        gap(body, 28);
         long held = state.bindings.values().stream().filter(b -> b.status.equals("HOLD") || b.status.equals("UNCERTAIN") || b.status.equals("SENDING")).count();
-        text(body, "保留与记录", 17, INK, true); gap(body, 8);
-        text(body, state.unresolvedCount + " 个云端文件尚未关联，" + held + " 个关联需要进一步核对。它们不会自动删除。", 14, MUTED, false);
-        action(body, "查看需要核对的文件", false, this::heldFiles);
-        action(body, "查看最近记录", false, () -> new AlertDialog.Builder(this).setTitle("最近记录")
+        section("保留与记录");
+        LinearLayout records = panel(body, surface, divider); records.setPadding(dp(16), dp(14), dp(16), dp(6));
+        text(records, state.unresolvedCount + " 个云端文件尚未关联，" + held + " 个关联需要进一步核对。它们不会自动删除。", 14, muted, false);
+        gap(records, 4);
+        action(records, "查看需要核对的文件", ROW, this::heldFiles);
+        action(records, "查看最近记录", ROW, () -> new AlertDialog.Builder(this).setTitle("最近记录")
                 .setMessage(state.history.isEmpty() ? "还没有检查记录。" : String.join("\n\n", state.history)).setPositiveButton("知道了", null).show());
-        action(body, "打开 OneDrive", false, () -> open("https://onedrive.live.com/"));
+        action(records, "打开 OneDrive", ROW, () -> open("https://onedrive.live.com/"));
     }
     private void settings() {
-        text(body, "一次连接，日常轻松整理。", 16, MUTED, false); gap(body, 22);
-        section("01", "连接 OneDrive");
-        text(body, state.accountId.isEmpty() ? "通过微软官方登录页面授权。" : "已连接：" + state.accountLabel, 14, MUTED, false);
-        action(body, state.accountId.isEmpty() ? "登录 OneDrive" : "重新授权", true, this::login);
-        action(body, "高级连接设置", false, this::advancedConnection);
-        if (!state.accountId.isEmpty()) action(body, "断开本应用的连接", false, this::signOut);
-        gap(body, 24); section("02", "选择照片目录");
-        text(body, "支持手机内部存储的相机、Pictures、截图等目录。云端目录可以继续按年月存放。", 14, MUTED, false);
-        action(body, LocalScanner.permitted(this) ? "照片访问权限已允许" : "允许照片和视频访问", false, this::permissions);
-        action(body, "选择手机目录（" + state.folders.size() + "）", true, this::localFolders);
-        if (!state.folders.isEmpty()) text(body, String.join("\n", state.folders), 13, MUTED, false);
-        action(body, "添加 OneDrive 目录", false, () -> {
+        text(body, "一次连接，日常轻松整理。", 16, muted, false); gap(body, 24);
+        section("连接 OneDrive");
+        LinearLayout connection = panel(body, surface, divider);
+        text(connection, state.accountId.isEmpty() ? "通过微软官方登录页面授权。" : "已连接：" + state.accountLabel, 14, state.accountId.isEmpty() ? muted : ink, false);
+        action(connection, state.accountId.isEmpty() ? "登录 OneDrive" : "重新授权", FILLED, this::login);
+        action(connection, "高级连接设置", ROW, this::advancedConnection);
+        if (!state.accountId.isEmpty()) action(connection, "断开本应用的连接", DANGER_ROW, this::signOut);
+        gap(body, 28); section("选择照片目录");
+        LinearLayout folders = panel(body, surface, divider);
+        text(folders, "支持手机内部存储的相机、Pictures、截图等目录。云端目录可以继续按年月存放。", 14, muted, false);
+        boolean permitted = LocalScanner.permitted(this);
+        action(folders, permitted ? "照片访问权限已允许" : "允许照片和视频访问", permitted ? ROW : OUTLINED, this::permissions);
+        action(folders, "选择手机目录（" + state.folders.size() + "）", FILLED, this::localFolders);
+        if (!state.folders.isEmpty()) { gap(folders, 8); text(folders, String.join("\n", state.folders), 13, muted, false); }
+        action(folders, "添加 OneDrive 目录", OUTLINED, () -> {
             if (state.accountId.isEmpty()) { toast("请先登录 OneDrive"); return; }
             cloudNavigation.clear(); cloudNavigation.add(new CloudItem("root", "OneDrive", "OneDrive", 0, "", true)); browseCloud();
         });
-        for (Map.Entry<String,String> root : state.cloudRoots.entrySet()) action(body, root.getValue() + "  ·  移除", false, () -> new AlertDialog.Builder(this)
+        for (Map.Entry<String,String> root : state.cloudRoots.entrySet()) action(folders, root.getValue() + "  ·  移除", DANGER_ROW, () -> danger(new AlertDialog.Builder(this)
                 .setTitle("移除管理目录？").setMessage("会重建本应用的对应关系并关闭自动清理，云端文件不会删除。")
-                .setNegativeButton("取消", null).setPositiveButton("移除", (d,w) -> mutate(s -> { s.cloudRoots.remove(root.getKey()); s.resetMapping(); })).show());
-        gap(body, 24); section("03", "检查与清理");
-        action(body, state.scheduled ? "检查频率：每 " + state.intervalHours + " 小时" : "检查频率：手动", false, this::scheduleDialog);
-        action(body, state.automatic ? "自动清理：已开启" : "自动清理：关闭", false, this::autoDialog);
-        text(body, "自动清理仅处理系统明确标记为回收站、连续两次检查且满 24 小时的文件。只是不见了的照片仍需手动确认。", 13, MUTED, false);
-        action(body, "手机后台运行设置", false, () -> {
+                .setNegativeButton("取消", null).setPositiveButton("移除", (d,w) -> mutate(s -> { s.cloudRoots.remove(root.getKey()); s.resetMapping(); })).show()));
+        gap(body, 28); section("检查与清理");
+        LinearLayout cleanup = panel(body, surface, divider); cleanup.setPadding(dp(16), dp(6), dp(16), dp(14));
+        action(cleanup, state.scheduled ? "检查频率：每 " + state.intervalHours + " 小时" : "检查频率：手动", ROW, this::scheduleDialog);
+        action(cleanup, state.automatic ? "自动清理：已开启" : "自动清理：关闭", state.automatic ? DANGER_ROW : ROW, this::autoDialog);
+        action(cleanup, "手机后台运行设置", ROW, () -> {
             new AlertDialog.Builder(this).setTitle("手机后台运行设置")
                     .setMessage("在手机的应用设置中允许通知，并按需调整后台运行或电池优化限制。部分系统另有自启动选项，菜单名称因设备及系统版本而异。系统仍可能推迟检查，打开应用可手动检查。")
                     .setNegativeButton("知道了", null).setPositiveButton("打开应用设置", (d,w) -> startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())))).show();
         });
-        gap(body, 24); section("04", "关于拾光");
-        action(body, "安装与连接教程", false, () -> guide("guide.html", "使用教程"));
-        action(body, "隐私说明", false, () -> guide("privacy.html", "隐私说明"));
-        action(body, "开源许可证", false, () -> guide("licenses.txt", "开源许可证"));
-        action(body, "GitHub 开源项目  →", false, () -> open("https://github.com/Pigbibi/OneDriveDeletionHelper"));
-        gap(body, 10); text(body, "PhotoKeep " + BuildConfig.VERSION_NAME + " · MIT License\nCopyright © 2026 Pigbibi\n独立开源项目，与 Microsoft、Google 无隶属关系。", 12, MUTED, false);
+        gap(cleanup, 8);
+        text(cleanup, "自动清理仅处理系统明确标记为回收站、连续两次检查且满 24 小时的文件。只是不见了的照片仍需手动确认。", 13, muted, false);
+        gap(body, 28); section("关于拾光");
+        LinearLayout about = panel(body, surface, divider); about.setPadding(dp(16), dp(6), dp(16), dp(6));
+        action(about, "安装与连接教程", ROW, () -> guide("guide.html", "使用教程"));
+        action(about, "隐私说明", ROW, () -> guide("privacy.html", "隐私说明"));
+        action(about, "开源许可证", ROW, () -> guide("licenses.txt", "开源许可证"));
+        action(about, "GitHub 开源项目  →", ROW, () -> open("https://github.com/Pigbibi/OneDriveDeletionHelper"));
+        gap(body, 16); text(body, "PhotoKeep " + BuildConfig.VERSION_NAME + " · MIT License\nCopyright © 2026 Pigbibi\n独立开源项目，与 Microsoft、Google 无隶属关系。", 12, muted, false);
     }
     private void confirmRecycle() {
         if (selected.isEmpty()) { toast("先勾选需要清理的文件"); return; }
         Set<String> ids = new LinkedHashSet<>(selected);
         long previewTime = state.lastScan;
-        new AlertDialog.Builder(this).setTitle("清理所选 " + ids.size() + " 个文件？")
+        danger(new AlertDialog.Builder(this).setTitle("清理所选 " + ids.size() + " 个文件？")
                 .setMessage("请确认这些照片是你主动删除的，而非移动、隐藏或释放手机空间。\n\n应用会重新检查手机，并读取云端原文件核对内容。确认一致后移入 OneDrive 回收站；不会清空回收站。")
-                .setNegativeButton("再看看", null).setPositiveButton("确认并核对内容", (d,w) -> { Scheduler.scan(this, ids, previewTime); selected.clear(); }).show();
+                .setNegativeButton("再看看", null).setPositiveButton("确认并核对内容", (d,w) -> { Scheduler.scan(this, ids, previewTime); selected.clear(); }).show());
     }
     private void advancedConnection() {
         if (working || loading) { toast("请等待当前操作完成"); return; }
         LinearLayout layout = column(); layout.setPadding(dp(24), dp(8), dp(24), dp(8));
         boolean bundled = state.clientId.equalsIgnoreCase(BuildConfig.MICROSOFT_CLIENT_ID);
-        text(layout, bundled ? "当前使用应用内置连接。通常无需修改。" : "当前使用自定义连接。升级时会保留原有配置。", 14, MUTED, false);
+        text(layout, bundled ? "当前使用应用内置连接。通常无需修改。" : "当前使用自定义连接。升级时会保留原有配置。", 14, muted, false);
         AlertDialog dialog = new AlertDialog.Builder(this).setTitle("高级连接设置").setView(layout)
                 .setNegativeButton("关闭", null).create();
-        action(layout, "自定义 Client ID", false, () -> { dialog.dismiss(); clientDialog(); });
-        Button restore = action(layout, "恢复默认连接", false, () -> {
+        action(layout, "自定义 Client ID", OUTLINED, () -> { dialog.dismiss(); clientDialog(); });
+        Button restore = action(layout, "恢复默认连接", OUTLINED, () -> {
             dialog.dismiss(); changeConnection(BuildConfig.MICROSOFT_CLIENT_ID);
         });
         restore.setEnabled(!bundled && State.validClientId(BuildConfig.MICROSOFT_CLIENT_ID));
@@ -257,24 +285,25 @@ public final class MainActivity extends Activity {
     private void changeConnection(String id) {
         if (working || loading) { toast("请等待当前操作完成"); return; }
         if (state.clientId.equalsIgnoreCase(id)) return;
-        new AlertDialog.Builder(this).setTitle("切换连接配置？")
+        danger(new AlertDialog.Builder(this).setTitle("切换连接配置？")
                 .setMessage("切换后需要重新登录并选择 OneDrive 目录，后台检查和自动清理会关闭，照片对应关系会重建。手机和云端照片不会删除。")
                 .setNegativeButton("取消", null).setPositiveButton("切换", (d,w) -> {
                     if (working || loading) { toast("请等待当前操作完成"); return; }
                     mutate(s -> s.changeClientId(id));
-                }).show();
+                }).show());
     }
     private void clientDialog() {
         LinearLayout layout = column(); layout.setPadding(dp(24), dp(8), dp(24), 0);
-        text(layout, "仅供自行注册微软应用或编译的用户使用。普通用户无需填写。这里只接受公开应用 ID，不接受客户端密码。", 14, MUTED, false);
+        text(layout, "仅供自行注册微软应用或编译的用户使用。普通用户无需填写。这里只接受公开应用 ID，不接受客户端密码。", 14, muted, false);
         EditText input = new EditText(this); input.setSingleLine(true); input.setHint("Application (client) ID"); input.setContentDescription("微软应用公开标识");
         if (!state.clientId.equalsIgnoreCase(BuildConfig.MICROSOFT_CLIENT_ID)) input.setText(state.clientId);
         layout.addView(input);
         try {
-            text(layout, "注册 Android 平台时使用下面的信息：", 13, MUTED, false);
-            TextView registration = text(layout, "包名：" + getPackageName() + "\n签名哈希：" + Auth.signature(this), 12, INK, false); registration.setTextIsSelectable(true);
-            action(layout, "复制包名与签名哈希", false, () -> { try { copy(getPackageName() + "\n" + Auth.signature(this)); } catch (AppFailure e) { toast(e.getMessage()); } });
-        } catch (AppFailure e) { text(layout, e.getMessage(), 13, MUTED, false); }
+            gap(layout, 8); text(layout, "注册 Android 平台时使用下面的信息：", 13, muted, false);
+            TextView registration = text(layout, "包名：" + getPackageName() + "\n签名哈希：" + Auth.signature(this), 13, ink, false); registration.setTextIsSelectable(true);
+            registration.setTypeface(Typeface.MONOSPACE);
+            action(layout, "复制包名与签名哈希", OUTLINED, () -> { try { copy(getPackageName() + "\n" + Auth.signature(this)); } catch (AppFailure e) { toast(e.getMessage()); } });
+        } catch (AppFailure e) { text(layout, e.getMessage(), 13, muted, false); }
         ScrollView scroll = new ScrollView(this); scroll.addView(layout);
         AlertDialog dialog = new AlertDialog.Builder(this).setTitle("自定义 Client ID").setView(scroll)
                 .setNeutralButton("开发者教程", (d,w) -> open("https://github.com/Pigbibi/OneDriveDeletionHelper/blob/main/docs/MICROSOFT-APP.md"))
@@ -319,7 +348,7 @@ public final class MainActivity extends Activity {
     }
     private void signOut() {
         if (working || loading) { toast("请等待当前操作完成"); return; }
-        new AlertDialog.Builder(this).setTitle("断开连接？").setMessage("本应用会停止检查并清除对应关系，OneDrive 中的照片保持原样。")
+        danger(new AlertDialog.Builder(this).setTitle("断开连接？").setMessage("本应用会停止检查并清除对应关系，OneDrive 中的照片保持原样。")
                 .setNegativeButton("取消", null).setPositiveButton("断开", (d,w) -> {
                     if (working || loading) { toast("请等待当前操作完成"); return; }
                     Auth.get(this, state.clientId).whenComplete((app, error) -> {
@@ -329,7 +358,7 @@ public final class MainActivity extends Activity {
                             @Override public void onError(MsalException exception) { runOnUiThread(() -> toast("断开未完成，请稍后重试")); }
                         });
                     });
-                }).show();
+                }).show());
     }
     private void permissions() {
         List<String> permissions = new ArrayList<>();
@@ -386,9 +415,9 @@ public final class MainActivity extends Activity {
         if (state.automatic) { mutate(s -> s.automatic = false); return; }
         if (state.lastScan == 0 || !state.scheduled || !LocalScanner.permitted(this)) { toast("请先建立对应关系、允许全部照片访问，并开启定期检查"); return; }
         if (state.bindings.values().stream().anyMatch(b -> b.status.equals("UNCERTAIN") || b.status.equals("SENDING"))) { toast("请先在预览中核对上次未确认的清理结果"); return; }
-        new AlertDialog.Builder(this).setTitle("开启自动清理？")
+        danger(new AlertDialog.Builder(this).setTitle("开启自动清理？")
                 .setMessage("仅处理手机系统明确标记为回收站、连续两次检查且满 24 小时的文件。\n\n每次最多 10 个，且大批量删除会暂停。执行前还会核对云端原文件内容。无法找到、隐藏或释放空间的照片仍需你手动确认。\n\n首次使用请先用测试照片验证。")
-                .setNegativeButton("暂不开启", null).setPositiveButton("开启自动清理", (d,w) -> mutate(s -> s.automatic = true)).show();
+                .setNegativeButton("暂不开启", null).setPositiveButton("开启自动清理", (d,w) -> mutate(s -> s.automatic = true)).show());
     }
     private void heldFiles() {
         List<Binding> held = new ArrayList<>();
@@ -434,46 +463,108 @@ public final class MainActivity extends Activity {
     }
     private void guide(String asset, String title) {
         try (java.io.InputStream input = getAssets().open(asset)) {
-            TextView text = new TextView(this); text.setTextColor(INK); text.setTextSize(15); text.setPadding(dp(24), dp(12), dp(24), dp(12));
             java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
             byte[] buffer = new byte[8192]; int count;
             while ((count = input.read(buffer)) != -1) bytes.write(buffer, 0, count);
             String content = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
-            text.setText(asset.endsWith(".txt") ? content : Html.fromHtml(content, Html.FROM_HTML_MODE_LEGACY)); text.setMovementMethod(LinkMovementMethod.getInstance());
-            ScrollView scroll = new ScrollView(this); scroll.addView(text);
-            new AlertDialog.Builder(this).setTitle(title).setView(scroll).setPositiveButton("知道了", null).show();
+            View view;
+            if (asset.endsWith(".txt")) {
+                TextView text = new TextView(this); text.setTextColor(ink); text.setTextSize(14); text.setPadding(dp(24), dp(12), dp(24), dp(12));
+                text.setText(content); text.setMovementMethod(LinkMovementMethod.getInstance());
+                ScrollView scroll = new ScrollView(this); scroll.addView(text); view = scroll;
+            } else view = document(content);
+            new AlertDialog.Builder(this).setTitle(title).setView(view).setPositiveButton("知道了", null).show();
         } catch (Exception e) { toast("教程暂时无法打开"); }
+    }
+    /** Bundled pages only: no JavaScript, file or network access; links open in the user's browser. */
+    private View document(String html) {
+        android.webkit.WebView web = new android.webkit.WebView(this);
+        android.webkit.WebSettings settings = web.getSettings();
+        settings.setJavaScriptEnabled(false); settings.setAllowFileAccess(false); settings.setAllowContentAccess(false); settings.setBlockNetworkLoads(true);
+        web.setBackgroundColor(surface);
+        web.setWebViewClient(new android.webkit.WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(android.webkit.WebView view, android.webkit.WebResourceRequest request) {
+                open(request.getUrl().toString()); return true;
+            }
+        });
+        web.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+        return web;
+    }
+    private void danger(AlertDialog dialog) {
+        Button confirm = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        if (confirm != null) { confirm.setTextColor(error); confirm.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL)); }
+    }
+    private void loadColors() {
+        bg = getColor(R.color.pk_background); surface = getColor(R.color.pk_surface_container); surfaceHigh = getColor(R.color.pk_surface_container_high);
+        ink = getColor(R.color.pk_on_surface); muted = getColor(R.color.pk_on_surface_variant); outline = getColor(R.color.pk_outline); divider = getColor(R.color.pk_outline_variant);
+        primary = getColor(R.color.pk_primary); onPrimary = getColor(R.color.pk_on_primary);
+        primaryContainer = getColor(R.color.pk_primary_container); onPrimaryContainer = getColor(R.color.pk_on_primary_container);
+        error = getColor(R.color.pk_error); onError = getColor(R.color.pk_on_error);
+        errorContainer = getColor(R.color.pk_error_container); onErrorContainer = getColor(R.color.pk_on_error_container);
+        ripple = getColor(R.color.pk_ripple);
     }
     private void copy(String value) { ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("应用注册信息", value)); toast("已复制"); }
     private void open(String url) { try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (ActivityNotFoundException e) { toast("请先安装浏览器"); } }
     private void toast(String value) { if (!isDestroyed()) Toast.makeText(this, value, Toast.LENGTH_LONG).show(); }
     private int dp(float value) { return Math.round(value * getResources().getDisplayMetrics().density); }
     private LinearLayout column() { LinearLayout layout = new LinearLayout(this); layout.setOrientation(LinearLayout.VERTICAL); return layout; }
-    private GradientDrawable background(int color, int radius) { GradientDrawable drawable = new GradientDrawable(); drawable.setColor(color); drawable.setCornerRadius(dp(radius)); return drawable; }
+    private GradientDrawable shape(int fill, int stroke) {
+        GradientDrawable drawable = new GradientDrawable(); drawable.setColor(fill); drawable.setCornerRadius(dp(RADIUS));
+        if (stroke != 0) drawable.setStroke(dp(1), stroke);
+        return drawable;
+    }
     private TextView text(LinearLayout parent, String value, int sp, int color, boolean bold) {
         TextView view = new TextView(this); view.setText(value); view.setTextSize(sp); view.setTextColor(color); view.setLineSpacing(dp(3), 1f);
         if (bold) view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         parent.addView(view, new LinearLayout.LayoutParams(-1, -2)); return view;
     }
     private void gap(LinearLayout parent, int height) { parent.addView(new View(this), new LinearLayout.LayoutParams(1, dp(height))); }
-    private LinearLayout panel(LinearLayout parent, int color) { LinearLayout panel = column(); panel.setBackground(background(color, 22)); panel.setPadding(dp(18), dp(18), dp(18), dp(18)); parent.addView(panel, new LinearLayout.LayoutParams(-1,-2)); return panel; }
-    private Button button(String title, boolean primary, Runnable run) {
-        Button button = new Button(this); button.setAllCaps(false); button.setText(title); button.setTextSize(15); button.setTextColor(primary ? Color.WHITE : GREEN);
+    private LinearLayout panel(LinearLayout parent, int fill, int stroke) {
+        LinearLayout panel = column(); panel.setBackground(shape(fill, stroke)); panel.setPadding(dp(16), dp(16), dp(16), dp(16));
+        parent.addView(panel, new LinearLayout.LayoutParams(-1,-2)); return panel;
+    }
+    private void chip(LinearLayout parent, String value, int fill, int color) {
+        TextView chip = new TextView(this); chip.setText(value); chip.setTextSize(13); chip.setTextColor(color);
+        chip.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        chip.setBackground(shape(fill, 0)); chip.setPadding(dp(10), dp(4), dp(10), dp(4));
+        parent.addView(chip, new LinearLayout.LayoutParams(-2, -2));
+    }
+    private Button button(String title, int kind, Runnable run) {
+        boolean row = kind == ROW || kind == DANGER_ROW;
+        int fill = kind == FILLED ? primary : kind == DANGER ? error : Color.TRANSPARENT;
+        int stroke = kind == OUTLINED ? outline : kind == DANGER_OUTLINED ? error : 0;
+        int label = kind == FILLED ? onPrimary : kind == DANGER ? onError : kind == DANGER_OUTLINED || kind == DANGER_ROW ? error : kind == ROW ? ink : primary;
+        Button button = new Button(this); button.setAllCaps(false); button.setText(title);
+        button.setTextSize(row ? 16 : 15);
+        button.setTypeface(row ? Typeface.DEFAULT : Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        button.setTextColor(new ColorStateList(new int[][]{{-android.R.attr.state_enabled}, {}}, new int[]{(ink & 0x00FFFFFF) | 0x61000000, label}));
         button.setStateListAnimator(null); button.setElevation(0);
-        button.setMinHeight(dp(52)); button.setPadding(dp(12), dp(12), dp(12), dp(12));
-        button.setBackground(new RippleDrawable(ColorStateList.valueOf(Color.argb(35,0,0,0)), background(primary ? GREEN : Color.TRANSPARENT, 15), background(Color.WHITE, 15)));
+        button.setMinHeight(dp(row ? 52 : 48)); button.setMinimumHeight(dp(row ? 52 : 48));
+        button.setPadding(dp(row ? 4 : 16), dp(10), dp(row ? 4 : 16), dp(10));
+        if (row) button.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+        StateListDrawable states = new StateListDrawable();
+        states.addState(new int[]{-android.R.attr.state_enabled}, shape(fill == Color.TRANSPARENT ? Color.TRANSPARENT : (ink & 0x00FFFFFF) | 0x1F000000, stroke == 0 ? 0 : (ink & 0x00FFFFFF) | 0x1F000000));
+        states.addState(new int[]{}, shape(fill, stroke));
+        button.setBackground(new RippleDrawable(ColorStateList.valueOf(ripple), states, shape(Color.WHITE, 0)));
         button.setOnClickListener(v -> run.run()); return button;
     }
-    private Button action(LinearLayout parent, String title, boolean primary, Runnable run) {
-        Button button = button(title, primary, run); LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2); p.topMargin = dp(10); parent.addView(button, p); return button;
+    private Button action(LinearLayout parent, String title, int kind, Runnable run) {
+        Button button = button(title, kind, run); LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+        p.topMargin = dp(kind == ROW || kind == DANGER_ROW ? 2 : 12); parent.addView(button, p); return button;
     }
-    private void metric(LinearLayout parent, String value, String title) { LinearLayout col = column(); text(col, value, 28, INK, true); text(col, title, 11, MUTED, false); parent.addView(col, new LinearLayout.LayoutParams(0,-2,1)); }
-    private void statusLine(String title, String value) {
-        LinearLayout row = new LinearLayout(this); row.setPadding(0,dp(10),0,dp(10));
-        TextView label = new TextView(this); label.setText(title); label.setTextColor(MUTED); label.setTextSize(13); row.addView(label, new LinearLayout.LayoutParams(dp(90),-2));
-        TextView detail = new TextView(this); detail.setText(value); detail.setTextColor(INK); detail.setTextSize(13); row.addView(detail,new LinearLayout.LayoutParams(0,-2,1)); body.addView(row);
-        View line = new View(this); line.setBackgroundColor(Color.rgb(221,227,217)); body.addView(line,new LinearLayout.LayoutParams(-1,dp(1)));
+    private void metric(LinearLayout parent, String value, String title, boolean separated) {
+        if (separated) { View line = new View(this); line.setBackgroundColor(divider); parent.addView(line, new LinearLayout.LayoutParams(dp(1), -1)); }
+        LinearLayout col = column(); col.setGravity(Gravity.CENTER_HORIZONTAL);
+        text(col, value, 26, ink, true).setGravity(Gravity.CENTER_HORIZONTAL);
+        gap(col, 2); text(col, title, 12, muted, false).setGravity(Gravity.CENTER_HORIZONTAL);
+        parent.addView(col, new LinearLayout.LayoutParams(0,-2,1));
     }
-    private void section(String number, String title) { text(body, number + "  /  " + title, 18, INK, true); gap(body,10); }
+    private void statusLine(LinearLayout parent, String title, String value, int valueColor, boolean separated) {
+        LinearLayout row = new LinearLayout(this); row.setPadding(0,dp(12),0,dp(12));
+        TextView label = new TextView(this); label.setText(title); label.setTextColor(muted); label.setTextSize(14); row.addView(label, new LinearLayout.LayoutParams(dp(88),-2));
+        TextView detail = new TextView(this); detail.setText(value); detail.setTextColor(valueColor); detail.setTextSize(14); row.addView(detail,new LinearLayout.LayoutParams(0,-2,1)); parent.addView(row);
+        if (separated) { View line = new View(this); line.setBackgroundColor(divider); parent.addView(line,new LinearLayout.LayoutParams(-1,dp(1))); }
+    }
+    private void section(String title) { text(body, title, 16, ink, true).setAccessibilityHeading(true); gap(body,10); }
     private static String size(long bytes) { return bytes >= 1024*1024 ? String.format(Locale.CHINA, "%.1f MB", bytes/(1024.0*1024)) : Math.max(1,bytes/1024) + " KB"; }
 }
