@@ -1,3 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>隐私说明</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #E7EBF1;
+  --text: #171C23;
+  --muted: #454E5B;
+  --accent: #2A5B9C;
+  --rule: #C7CFDA;
+  --node: #E7EBF1;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #242932; --text: #E2E6EC; --muted: #B9C1CD; --accent: #A8C7FA; --rule: #434B57; --node: #242932; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; color: var(--text); background: var(--bg);
+  font: 16px/1.75 system-ui, -apple-system, "PingFang SC", "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  overflow-wrap: anywhere;
+}
+.doc { max-width: 680px; padding: 8px 16px 32px; }
+h2 { margin: 8px 0 16px; font-size: 24px; line-height: 1.35; font-weight: 600; letter-spacing: 0.01em; }
+h2 + p { font-size: 17px; color: var(--text); margin-bottom: 28px; }
+p { margin: 0 0 14px; color: var(--muted); }
+a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+/* Guide: the numbered sections are a real sequence, so they sit on one rail. */
+.guide h3 {
+  position: relative; margin: 0; padding: 0 0 8px 28px;
+  font-size: 17px; line-height: 1.5; font-weight: 600; color: var(--text);
+}
+.guide h3::before {
+  content: ""; position: absolute; left: 2px; top: 6px; width: 12px; height: 12px;
+  border: 2px solid var(--accent); border-radius: 50%; background: var(--node);
+}
+.guide h3 ~ p { margin: 0; padding: 0 0 14px 28px; border-left: 2px solid var(--rule); margin-left: 7px; padding-left: 19px; }
+.guide h3 + p { margin-top: -8px; padding-top: 8px; }
+.guide h3:not(:first-of-type) { border-left: 2px solid var(--rule); margin-left: 7px; padding-left: 19px; padding-top: 18px; }
+.guide h3:not(:first-of-type)::before { left: -9px; top: 24px; }
+.guide h3:first-of-type { margin-left: 7px; padding-left: 21px; }
+.guide h3:first-of-type::before { left: -7px; }
+.guide p:last-child { border-left-color: transparent; padding-top: 18px; }
+/* Privacy: a plain reading column; the copyright line closes the document. */
+.privacy p { color: var(--text); }
+.privacy p:last-child { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+@media (min-width: 900px) {
+  .doc {
+    max-width: none; display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 640px);
+    column-gap: 72px; padding: 72px 6vw 96px; align-items: start;
+  }
+  .doc > h2 { grid-column: 1; grid-row: 1 / span 60; position: sticky; top: 72px; font-size: 32px; margin: 0; }
+  .doc > :not(h2) { grid-column: 2; }
+  h2 + p { margin-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<main class="doc privacy">
 <h2>隐私说明</h2>
 <p>本版本不提供开发者服务器，不包含广告、统计或崩溃上报。开发者不会接收你的照片、文件名或账号令牌。</p>
 <p>手机照片的文件名、目录、大小、内容校验值和与 OneDrive 的对应关系只保存在本应用私有目录。为了识别移动和相同副本，会读取内部存储中系统可见的照片和视频；只对你选择的目录建立新的管理关联。</p>
@@ -7,3 +73,6 @@
 <p>网络连接用于微软登录、OneDrive 文件列表与内容核对及移入回收站。你主动打开教程、项目或 OneDrive 网页时，会由浏览器连接相应网站。</p>
 <p>你可以断开本应用的连接，在微软账号中撤销授权，或者卸载应用删除本机记录。卸载不会删除 OneDrive 照片。</p>
 <p>Copyright © 2026 Pigbibi。MIT 开源软件；独立项目，与 Microsoft、Google 或设备厂商无隶属关系。</p>
+</main>
+</body>
+</html>

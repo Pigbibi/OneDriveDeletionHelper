@@ -1,19 +1,23 @@
 <resources>
-    <!-- Material 3 color roles. Fixed brand green instead of dynamic color so danger states stay distinct. -->
-    <color name="pk_primary">#176B55</color>
+    <!-- Material 3 color roles, fixed (no dynamic color) so the danger role stays distinct from the brand. -->
+    <color name="pk_primary">#2A5B9C</color>
     <color name="pk_on_primary">#FFFFFF</color>
-    <color name="pk_primary_container">#D3E8DD</color>
-    <color name="pk_on_primary_container">#0B3F31</color>
-    <color name="pk_error">#B3261E</color>
+    <color name="pk_primary_container">#D7E3FA</color>
+    <color name="pk_on_primary_container">#0E2F5C</color>
+    <color name="pk_secondary_container">#DCE3EE</color>
+    <color name="pk_on_secondary_container">#152235</color>
+    <color name="pk_error">#B42318</color>
     <color name="pk_on_error">#FFFFFF</color>
-    <color name="pk_error_container">#F9DEDC</color>
-    <color name="pk_on_error_container">#410E0B</color>
-    <color name="pk_background">#F5F7F4</color>
-    <color name="pk_surface_container">#FBFCFA</color>
-    <color name="pk_surface_container_high">#E9EEEA</color>
-    <color name="pk_on_surface">#191D1B</color>
-    <color name="pk_on_surface_variant">#46514B</color>
-    <color name="pk_outline">#717B75</color>
-    <color name="pk_outline_variant">#D2D9D4</color>
-    <color name="pk_ripple">#1F176B55</color>
+    <color name="pk_error_container">#FBE2DE</color>
+    <color name="pk_on_error_container">#5A1009</color>
+    <color name="pk_background">#F7F8FA</color>
+    <color name="pk_surface_container_lowest">#FFFFFF</color>
+    <color name="pk_surface_container">#EEF1F5</color>
+    <color name="pk_surface_container_high">#E7EBF1</color>
+    <color name="pk_on_surface">#171C23</color>
+    <color name="pk_on_surface_variant">#454E5B</color>
+    <color name="pk_outline">#717A87</color>
+    <color name="pk_outline_variant">#D3D9E1</color>
+    <color name="pk_accent_warm">#D99A2B</color>
+    <color name="pk_ripple">#1F2A5B9C</color>
 </resources>
