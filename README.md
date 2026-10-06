@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-<img src="docs/branding/icon.svg" width="88" height="88" alt="PhotoKeep icon: a photo and a cloud on a dark-green background" />
+<img src="docs/branding/icon.svg" width="88" height="88" alt="PhotoKeep icon: a photo print and a checked cloud on a deep-blue background" />
 
 **Keep OneDrive's automatic backup, and let cleanup on your phone catch up with the cloud.**
 

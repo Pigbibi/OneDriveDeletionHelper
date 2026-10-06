@@ -1,5 +1,5 @@
 <resources>
-    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorPrimary">@color/pk_primary</item>
         <item name="android:colorAccent">@color/pk_primary</item>
@@ -10,15 +10,15 @@
         <item name="android:textColorPrimary">@color/pk_on_surface</item>
         <item name="android:textColorSecondary">@color/pk_on_surface_variant</item>
         <item name="android:textColorLink">@color/pk_primary</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
         <item name="android:statusBarColor">@color/pk_background</item>
         <item name="android:navigationBarColor">@color/pk_surface_container</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@color/pk_background</item>
         <item name="android:alertDialogTheme">@style/AppDialog</item>
     </style>
-    <style name="AppDialog" parent="android:style/Theme.Material.Light.Dialog.Alert">
+    <style name="AppDialog" parent="android:style/Theme.Material.Dialog.Alert">
         <item name="android:colorAccent">@color/pk_primary</item>
         <item name="android:colorControlActivated">@color/pk_primary</item>
         <item name="android:colorBackground">@color/pk_surface_container_high</item>

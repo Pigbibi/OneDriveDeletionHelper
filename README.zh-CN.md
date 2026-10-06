@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-<img src="docs/branding/icon.svg" width="88" height="88" alt="PhotoKeep 图标：墨绿底色上的照片与云朵" />
+<img src="docs/branding/icon.svg" width="88" height="88" alt="PhotoKeep 图标：深蓝底色上的照片与带勾云朵" />
 
 **保留 OneDrive 的自动备份，让手机上的清理跟上云端。**
 
