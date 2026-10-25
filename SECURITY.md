@@ -2,11 +2,9 @@
 
 PhotoKeep 直接连接你的 Microsoft 账号，能读取云端照片并把它移入回收站。这里说明怎么报告问题、哪些内容不能公开。
 
-## 怎么报告
+## Reporting a vulnerability
 
-只有能在公开场合安全描述的问题才开 Issue。
-
-涉及真实令牌、账号访问、或能读到别人云端文件的漏洞，请**只说明影响范围**（比如「可以让未授权的账号读到文件列表」），不要写利用步骤，然后请求一个私下沟通的渠道。维护者会跟进。如果仓库的 Private vulnerability reporting 已开启，优先用那个。
+Report security vulnerabilities through [GitHub private vulnerability reporting](https://github.com/Pigbibi/OneDriveDeletionHelper/security/advisories/new). Do not post exploit details, credentials, private sessions or personal data in public issues or PRs. Include the affected version, impact and minimal redacted reproduction. The maintainer handles reports on a best-effort basis; no bounty or response-time guarantee is implied.
 
 ## 不要公开粘贴的内容
 
