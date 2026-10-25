@@ -20,7 +20,7 @@ python3 scripts/build-release.py
 
 可用 `PHOTOKEEP_SIGNING_DIR` 指定另一个仓库外的私有目录。没有旧密钥时不要为已经发布的应用重建密钥，否则用户不能覆盖升级。APK 的微软 Android 签名哈希也会改变，需要修改微软应用注册。
 
-脚本会执行测试、release lint 和 release 构建，输出 `dist/PhotoKeep-0.2.0.apk` 及 `dist/SHA256SUMS.txt`。发布前用 SDK 的 `apksigner verify --verbose --print-certs` 验证签名；证书指纹是公开信息，可以随发布说明公布。版本号从 `app/build.gradle.kts` 读取，输出文件名自动跟随。
+脚本会执行测试、release lint 和 release 构建，输出 `dist/PhotoKeep-<版本号>.apk` 及 `dist/SHA256SUMS.txt`。发布前用 SDK 的 `apksigner verify --verbose --print-certs` 验证签名；证书指纹是公开信息，可以随发布说明公布。版本号从 `app/build.gradle.kts` 读取，输出文件名自动跟随。
 
 ## 发布规则
 

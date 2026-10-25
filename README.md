@@ -8,7 +8,7 @@
 
 PhotoKeep is a standalone, open-source Android app that connects your phone directly to Microsoft Graph. You keep backing up originals and videos with the official OneDrive app; PhotoKeep builds the correspondence, checks deletions, and moves confirmed cloud files to the recycle bin. No self-hosted server is required.
 
-[Download v0.2.0 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.2.0) · [Setup and Microsoft connection](docs/SETUP.zh-CN.md) (Chinese) · [Privacy](docs/PRIVACY.md) (Chinese) · [MIT license](LICENSE)
+[Download v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [Setup and Microsoft connection](docs/SETUP.zh-CN.md) (Chinese) · [Privacy](docs/PRIVACY.md) (Chinese) · [Changelog](CHANGELOG.md) · [MIT license](LICENSE)
 
 > **This is a pre-release.** The published APK embeds the project's public Microsoft application ID, so you just tap **Sign in with OneDrive** and authorize — regular users don't need to register an app. Work/school accounts may require administrator approval. Real-device deletion behavior for the system gallery and Google Photos, and full end-to-end verification against a OneDrive account, are still pending — try it with test photos first.
 
@@ -28,6 +28,7 @@ Screenshots show the real app running in an Android 15 emulator, without real ph
 - Select multiple OneDrive photo directories, read recursively, and handle pagination. Phone and cloud directory layouts don't have to match, so existing year/month folders are preserved.
 - Check content hashes of local photos and videos; cloud files are kept when they moved, were renamed, or still have an identical local copy.
 - Manual check, cleanup preview, per-item confirmation, keep-selected, and recent history.
+- Light and dark themes, plus an in-app help page.
 - Background checks every 6 hours, 12 hours, or daily over Wi-Fi; the system may postpone them.
 - Optional automatic cleanup: off by default, and only for files the **system explicitly marks as trashed**, with two consecutive valid checks and 24 hours elapsed.
 - Before deleting, stream the cloud original to verify SHA-256 and the full byte count; re-confirm the file version, directory scope, and phone media-library state.
@@ -55,7 +56,7 @@ That verification step uses download bandwidth, and long videos can take a while
 
 ## Install and get started
 
-1. Download `PhotoKeep-0.2.0.apk` from Releases and install it on Android 11 or later. Allow installing from that source.
+1. Download `PhotoKeep-0.3.1.apk` from Releases and install it on Android 11 or later. Allow installing from that source.
 2. Tap **Sign in with OneDrive** and complete sign-in on Microsoft's official page; see the [connection guide](docs/SETUP.zh-CN.md) (Chinese).
 3. In the app, grant full-photos permission and choose the phone and OneDrive directories.
 4. Connect to Wi-Fi and build the first correspondence. Start with a few test photos to check delete, move, rename, and keep-copy behavior.
