@@ -2,7 +2,7 @@
 
 ## 构建发布包
 
-先按[开发者注册教程](MICROSOFT-APP.md)完成项目微软应用注册，确认 `config/microsoft.properties` 中的公开 Client ID 及微软后台的发布签名回调。发布构建会拒绝未配置的 Client ID。
+先按[开发者注册教程](microsoft-app.md)完成项目微软应用注册，确认 `config/microsoft.properties` 中的公开 Client ID 及微软后台的发布签名回调。发布构建会拒绝未配置的 Client ID。
 
 配置 Java 17 与 Android SDK 后，项目的首次发布者执行：
 

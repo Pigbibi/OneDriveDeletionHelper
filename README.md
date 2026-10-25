@@ -8,7 +8,7 @@
 
 PhotoKeep is a standalone, open-source Android app that connects your phone directly to Microsoft Graph. You keep backing up originals and videos with the official OneDrive app; PhotoKeep builds the correspondence, checks deletions, and moves confirmed cloud files to the recycle bin. No self-hosted server is required.
 
-[Download v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [Setup and Microsoft connection](docs/SETUP.zh-CN.md) (Chinese) · [Privacy](docs/PRIVACY.md) (Chinese) · [MIT license](LICENSE)
+[Download v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [Setup and Microsoft connection](docs/setup.zh-CN.md) (Chinese) · [Privacy](docs/privacy.md) (Chinese) · [MIT license](LICENSE)
 
 > **This is a pre-release.** The published APK embeds the project's public Microsoft application ID, so you just tap **Sign in with OneDrive** and authorize — regular users don't need to register an app. Work/school accounts may require administrator approval. Real-device deletion behavior for the system gallery and Google Photos, and full end-to-end verification against a OneDrive account, are still pending — try it with test photos first.
 
@@ -57,7 +57,7 @@ That verification step uses download bandwidth, and long videos can take a while
 ## Install and get started
 
 1. Download `PhotoKeep-0.3.1.apk` from Releases and install it on Android 11 or later. Allow installing from that source.
-2. Tap **Sign in with OneDrive** and complete sign-in on Microsoft's official page; see the [connection guide](docs/SETUP.zh-CN.md) (Chinese).
+2. Tap **Sign in with OneDrive** and complete sign-in on Microsoft's official page; see the [connection guide](docs/setup.zh-CN.md) (Chinese).
 3. In the app, grant full-photos permission and choose the phone and OneDrive directories.
 4. Connect to Wi-Fi and build the first correspondence. Start with a few test photos to check delete, move, rename, and keep-copy behavior.
 5. Confirm the results in the cleanup preview, then enable periodic checks and automatic cleanup as needed.
@@ -68,7 +68,7 @@ That verification step uses download bandwidth, and long videos can take a while
 
 There is no developer server, advertising, or developer data reporting. The app's private records don't participate in cloud backup or device migration, to avoid mistaking another phone's missing files for deletions. Microsoft sign-in is handled by MSAL; passwords, access tokens, and download links are never written into app records.
 
-Microsoft Graph's `Files.ReadWrite` permission itself includes read and write capability — it is not a "delete-only" permission. This project's code only queries, verifies content, and moves files to the recycle bin. Raw media metadata is read to verify full original-file bytes, not to extract location coordinates. See [Privacy](docs/PRIVACY.md) (Chinese) for details.
+Microsoft Graph's `Files.ReadWrite` permission itself includes read and write capability — it is not a "delete-only" permission. This project's code only queries, verifies content, and moves files to the recycle bin. Raw media metadata is read to verify full original-file bytes, not to extract location coordinates. See [Privacy](docs/privacy.md) (Chinese) for details.
 
 ## Develop and build
 
@@ -80,11 +80,11 @@ Uses Java 17 and the Android SDK (`platforms;android-37.0`, `build-tools;36.0.0`
 
 The debug APK lands at `app/build/outputs/apk/debug/app-debug.apk`. Android Studio can open the project root directly. The SDK location uses `ANDROID_HOME` or an untracked local `local.properties`.
 
-Release builds and signing are described in [Releasing](docs/RELEASING.md) (Chinese). When building yourself, the APK signature differs from the published one, so follow the [developer guide](docs/MICROSOFT-APP.md) (Chinese) to configure your own Microsoft app; regular users should install the published build.
+Release builds and signing are described in [Releasing](docs/releasing.md) (Chinese). When building yourself, the APK signature differs from the published one, so follow the [developer guide](docs/microsoft-app.md) (Chinese) to configure your own Microsoft app; regular users should install the published build.
 
 All account authorization, cloud-content download, and real deletion testing must use your own test directory. Automated tests don't touch a real Microsoft account.
 
-Core code: `core/` handles matching, deletion policy, and pre-delete verification; `data/` handles media reading, Microsoft auth, Graph, and local storage; `sync/` handles the check flow and scheduling. The UI uses native Android Views; see [DESIGN.md](docs/DESIGN.md) (Chinese) for design conventions.
+Core code: `core/` handles matching, deletion policy, and pre-delete verification; `data/` handles media reading, Microsoft auth, Graph, and local storage; `sync/` handles the check flow and scheduling. The UI uses native Android Views; see [DESIGN.md](docs/design.md) (Chinese) for design conventions.
 
 ## Open source
 
