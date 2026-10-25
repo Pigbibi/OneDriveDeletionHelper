@@ -1,0 +1,17 @@
+{
+  "repo": "Pigbibi/OneDriveDeletionHelper",
+  "branch": "main",
+  "files": [
+    "app/build.gradle.kts",
+    "build.gradle.kts"
+  ],
+  "directories": [
+    "/",
+    "/.github"
+  ],
+  "required_checks": [
+    "verify",
+    "Repository hygiene",
+    "Safe dependency update"
+  ]
+}
