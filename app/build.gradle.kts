@@ -8,7 +8,7 @@ val microsoftClientId = providers.gradleProperty("photokeepClientId")
     .orElse(registration.getProperty("clientId", "")).get().trim().lowercase()
 val validClientId = microsoftClientId.matches(Regex("[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}")) &&
     microsoftClientId != "00000000-0000-0000-0000-000000000000"
-require(microsoftClientId.isEmpty() || validClientId) { "Invalid public Microsoft client ID; see docs/MICROSOFT-APP.md." }
+require(microsoftClientId.isEmpty() || validClientId) { "Invalid public Microsoft client ID; see docs/microsoft-app.md." }
 android {
     namespace = "cn.lisiyi.photokeep"
     compileSdk = 37
@@ -43,7 +43,7 @@ android {
 val verifyMicrosoftRegistration by tasks.registering {
     inputs.property("microsoftClientId", microsoftClientId)
     doLast {
-        check(validClientId) { "Release requires PhotoKeep's registered Microsoft client ID; see docs/MICROSOFT-APP.md." }
+        check(validClientId) { "Release requires PhotoKeep's registered Microsoft client ID; see docs/microsoft-app.md." }
     }
 }
 tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(verifyMicrosoftRegistration) }

@@ -336,7 +336,7 @@ public final class MainActivity extends Activity {
         } catch (AppFailure e) { text(layout, e.getMessage(), 13, muted, false); }
         ScrollView scroll = new ScrollView(this); scroll.addView(layout);
         AlertDialog dialog = new AlertDialog.Builder(this).setTitle("自定义 Client ID").setView(scroll)
-                .setNeutralButton("开发者教程", (d,w) -> open("https://github.com/Pigbibi/OneDriveDeletionHelper/blob/main/docs/MICROSOFT-APP.md"))
+                .setNeutralButton("开发者教程", (d,w) -> open("https://github.com/Pigbibi/OneDriveDeletionHelper/blob/main/docs/microsoft-app.md"))
                 .setNegativeButton("取消", null).setPositiveButton("保存", null).create();
         dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             String id = input.getText().toString().trim();
