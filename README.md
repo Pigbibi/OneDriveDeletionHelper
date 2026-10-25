@@ -49,7 +49,9 @@ Screenshots show the real app running in an Android 15 emulator, without real ph
 | SD card, app-private directories, vaults, files not indexed by the system | Not supported in this release |
 | Motion photos, HEIC/RAW, and other special formats | Verified by raw bytes; kept if the API returns different content — not all vendor formats are guaranteed to match |
 
-The first scan only builds **candidate correspondences**: name and size narrow the field, they don't authorize deletion. Full cloud content verification happens right before cleanup, so the first setup doesn't download the whole album. That step uses download bandwidth and long videos can take a while, but it never stores a copy or re-uploads photos.
+The first scan only builds **candidate correspondences**: name and size narrow the field, they don't authorize deletion. Full cloud content verification happens right before cleanup, so the first setup doesn't download the whole album.
+
+That verification step uses download bandwidth, and long videos can take a while. It never stores a copy or re-uploads photos.
 
 ## Install and get started
 
@@ -77,7 +79,9 @@ Uses Java 17 and the Android SDK (`platforms;android-37.0`, `build-tools;36.0.0`
 
 The debug APK lands at `app/build/outputs/apk/debug/app-debug.apk`. Android Studio can open the project root directly. The SDK location uses `ANDROID_HOME` or an untracked local `local.properties`.
 
-Release builds and signing are described in [Releasing](docs/RELEASING.md) (Chinese). When building yourself, the APK signature differs from the published one, so follow the [developer guide](docs/MICROSOFT-APP.md) (Chinese) to configure your own Microsoft app; regular users should install the published build. All account authorization, cloud-content download, and real deletion testing must use your own test directory; automated tests don't touch a real Microsoft account.
+Release builds and signing are described in [Releasing](docs/RELEASING.md) (Chinese). When building yourself, the APK signature differs from the published one, so follow the [developer guide](docs/MICROSOFT-APP.md) (Chinese) to configure your own Microsoft app; regular users should install the published build.
+
+All account authorization, cloud-content download, and real deletion testing must use your own test directory. Automated tests don't touch a real Microsoft account.
 
 Core code: `core/` handles matching, deletion policy, and pre-delete verification; `data/` handles media reading, Microsoft auth, Graph, and local storage; `sync/` handles the check flow and scheduling. The UI uses native Android Views; see [DESIGN.md](docs/DESIGN.md) (Chinese) for design conventions.
 
