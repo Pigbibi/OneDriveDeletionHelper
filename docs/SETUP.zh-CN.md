@@ -2,7 +2,7 @@
 
 ## 安装后直接登录
 
-1. 从 [Releases](https://github.com/Pigbibi/OneDriveDeletionHelper/releases) 下载 `PhotoKeep-0.2.0.apk`，在 Android 11 或更新版本安装。
+1. 从 [Releases](https://github.com/Pigbibi/OneDriveDeletionHelper/releases) 下载最新版本的 `PhotoKeep-<版本>.apk`（当前 `0.3.1`），在 Android 11 或更新版本安装。
 2. 打开应用，点击 **登录 OneDrive**。系统会打开微软官方登录页面。
 3. 使用自己的微软账号登录，查看并同意 PhotoKeep 请求的文件访问权限，随后返回应用。
 4. 允许全部照片和视频访问，再选择手机目录与 OneDrive 目录。

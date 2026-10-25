@@ -8,7 +8,7 @@
 
 PhotoKeep is a standalone, open-source Android app that connects your phone directly to Microsoft Graph. You keep backing up originals and videos with the official OneDrive app; PhotoKeep builds the correspondence, checks deletions, and moves confirmed cloud files to the recycle bin. No self-hosted server is required.
 
-[Download v0.2.0 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.2.0) · [Setup and Microsoft connection](docs/SETUP.zh-CN.md) (Chinese) · [Privacy](docs/PRIVACY.md) (Chinese) · [MIT license](LICENSE)
+[Download v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [Setup and Microsoft connection](docs/SETUP.zh-CN.md) (Chinese) · [Privacy](docs/PRIVACY.md) (Chinese) · [MIT license](LICENSE)
 
 > **This is a pre-release.** The published APK embeds the project's public Microsoft application ID, so you just tap **Sign in with OneDrive** and authorize — regular users don't need to register an app. Work/school accounts may require administrator approval. Real-device deletion behavior for the system gallery and Google Photos, and full end-to-end verification against a OneDrive account, are still pending — try it with test photos first.
 
@@ -28,6 +28,7 @@ Screenshots show the real app running in an Android 15 emulator, without real ph
 - Select multiple OneDrive photo directories, read recursively, and handle pagination. Phone and cloud directory layouts don't have to match, so existing year/month folders are preserved.
 - Check content hashes of local photos and videos; cloud files are kept when they moved, were renamed, or still have an identical local copy.
 - Manual check, cleanup preview, per-item confirmation, keep-selected, and recent history.
+- Light and dark themes, plus an in-app help page.
 - Background checks every 6 hours, 12 hours, or daily over Wi-Fi; the system may postpone them.
 - Optional automatic cleanup: off by default, and only for files the **system explicitly marks as trashed**, with two consecutive valid checks and 24 hours elapsed.
 - Before deleting, stream the cloud original to verify SHA-256 and the full byte count; re-confirm the file version, directory scope, and phone media-library state.
@@ -49,11 +50,13 @@ Screenshots show the real app running in an Android 15 emulator, without real ph
 | SD card, app-private directories, vaults, files not indexed by the system | Not supported in this release |
 | Motion photos, HEIC/RAW, and other special formats | Verified by raw bytes; kept if the API returns different content — not all vendor formats are guaranteed to match |
 
-The first scan only builds **candidate correspondences**: name and size narrow the field, they don't authorize deletion. Full cloud content verification happens right before cleanup, so the first setup doesn't download the whole album. That step uses download bandwidth and long videos can take a while, but it never stores a copy or re-uploads photos.
+The first scan only builds **candidate correspondences**: name and size narrow the field, they don't authorize deletion. Full cloud content verification happens right before cleanup, so the first setup doesn't download the whole album.
+
+That verification step uses download bandwidth, and long videos can take a while. It never stores a copy or re-uploads photos.
 
 ## Install and get started
 
-1. Download `PhotoKeep-0.2.0.apk` from Releases and install it on Android 11 or later. Allow installing from that source.
+1. Download `PhotoKeep-0.3.1.apk` from Releases and install it on Android 11 or later. Allow installing from that source.
 2. Tap **Sign in with OneDrive** and complete sign-in on Microsoft's official page; see the [connection guide](docs/SETUP.zh-CN.md) (Chinese).
 3. In the app, grant full-photos permission and choose the phone and OneDrive directories.
 4. Connect to Wi-Fi and build the first correspondence. Start with a few test photos to check delete, move, rename, and keep-copy behavior.
@@ -77,7 +80,9 @@ Uses Java 17 and the Android SDK (`platforms;android-37.0`, `build-tools;36.0.0`
 
 The debug APK lands at `app/build/outputs/apk/debug/app-debug.apk`. Android Studio can open the project root directly. The SDK location uses `ANDROID_HOME` or an untracked local `local.properties`.
 
-Release builds and signing are described in [Releasing](docs/RELEASING.md) (Chinese). When building yourself, the APK signature differs from the published one, so follow the [developer guide](docs/MICROSOFT-APP.md) (Chinese) to configure your own Microsoft app; regular users should install the published build. All account authorization, cloud-content download, and real deletion testing must use your own test directory; automated tests don't touch a real Microsoft account.
+Release builds and signing are described in [Releasing](docs/RELEASING.md) (Chinese). When building yourself, the APK signature differs from the published one, so follow the [developer guide](docs/MICROSOFT-APP.md) (Chinese) to configure your own Microsoft app; regular users should install the published build.
+
+All account authorization, cloud-content download, and real deletion testing must use your own test directory. Automated tests don't touch a real Microsoft account.
 
 Core code: `core/` handles matching, deletion policy, and pre-delete verification; `data/` handles media reading, Microsoft auth, Graph, and local storage; `sync/` handles the check flow and scheduling. The UI uses native Android Views; see [DESIGN.md](docs/DESIGN.md) (Chinese) for design conventions.
 
