@@ -8,7 +8,7 @@
 
 PhotoKeep is a standalone, open-source Android app that connects your phone directly to Microsoft Graph. You keep backing up originals and videos with the official OneDrive app; PhotoKeep builds the correspondence, checks deletions, and moves confirmed cloud files to the recycle bin. No self-hosted server is required.
 
-[Download v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [Setup and Microsoft connection](docs/SETUP.zh-CN.md) (Chinese) · [Privacy](docs/PRIVACY.md) (Chinese) · [Changelog](CHANGELOG.md) · [MIT license](LICENSE)
+[Download v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [Setup and Microsoft connection](docs/SETUP.zh-CN.md) (Chinese) · [Privacy](docs/PRIVACY.md) (Chinese) · [MIT license](LICENSE)
 
 > **This is a pre-release.** The published APK embeds the project's public Microsoft application ID, so you just tap **Sign in with OneDrive** and authorize — regular users don't need to register an app. Work/school accounts may require administrator approval. Real-device deletion behavior for the system gallery and Google Photos, and full end-to-end verification against a OneDrive account, are still pending — try it with test photos first.
 

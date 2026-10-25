@@ -8,7 +8,7 @@
 
 PhotoKeep 是一个独立的 Android 开源工具，由手机直接连接 Microsoft Graph。你继续使用 OneDrive 官方应用备份原图和视频，PhotoKeep 负责建立对应关系、检查删除，并将确认的云端文件移入回收站。无需自建服务器。
 
-[下载 v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [安装与微软连接教程](docs/SETUP.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [更新记录](CHANGELOG.md) · [MIT 协议](LICENSE)
+[下载 v0.3.1 APK](https://github.com/Pigbibi/OneDriveDeletionHelper/releases/tag/v0.3.1) · [安装与微软连接教程](docs/SETUP.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [MIT 协议](LICENSE)
 
 > **这是预发布初版。** 发布 APK 已内置项目的公开微软应用编号，安装后点击“登录 OneDrive”并授权即可；普通用户无需注册应用。工作/学校账号可能需要组织管理员批准。真实 Android 设备、系统相册及 Google Photos 的删除表现，以及 OneDrive 账号的完整联调尚待验证，请先用测试照片。
 
