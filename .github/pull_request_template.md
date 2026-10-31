@@ -25,3 +25,11 @@ Follow `AGENTS.md` and `.github/engineering.md`.
       same pull request.
 - [ ] Changes to what is selected for deletion, what is skipped, or how a
       deletion is confirmed are stated above rather than implied.
+
+## AI assistance
+
+Which AI tool and model were used? Write `None` if no AI was used.
+
+## What changed
+
+Describe the change and its purpose.
