@@ -33,6 +33,12 @@ Java / Android，Gradle（`build.gradle.kts`）。
 - 改文件名时同一次提交改完所有引用。
 - 提交前跑 `python scripts/check_hygiene.py`。
 
+<!-- repository-files:begin -->
+- 公开仓库（有 `LICENSE`）要有 `CONTRIBUTING.md`、`SECURITY.md`、`CODE_OF_CONDUCT.md` 和 issue / PR 模板；私有仓库至少要有 `SECURITY.md`。
+- 公开的 `SECURITY.md` 写对外披露流程，不写凭据放在哪、怎么轮换；私有仓库反过来写。两套不合并。
+- 模板文件名用下划线：`pull_request_template.md`、`issue_template.md`，写成连字符不会被 GitHub 识别。
+<!-- repository-files:end -->
+
 ## 不要做
 
 - **不要扩大删除范围。** 这个应用会真删用户照片，任何涉及筛选条件的改动都要先确认边界，宁可少删。
