@@ -2,6 +2,7 @@
   "repo": "Pigbibi/OneDriveDeletionHelper",
   "branch": "main",
   "files": [
+    ".github/requirements-ci.txt",
     "app/build.gradle.kts",
     "build.gradle.kts"
   ],
@@ -13,5 +14,13 @@
     "verify",
     "Repository hygiene",
     "Safe dependency update"
+  ],
+  "action_files": [
+    ".github/workflows/android.yml",
+    ".github/workflows/dependabot-auto-merge.yml",
+    ".github/workflows/dependabot-policy.yml",
+    ".github/workflows/engineering-governance.yml",
+    ".github/workflows/repository-hygiene.yml",
+    ".github/workflows/risk-gate.yml"
   ]
 }
