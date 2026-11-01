@@ -53,7 +53,7 @@ dependencies {
     // Android's persistent scheduler survives process restarts and observes network constraints.
     implementation("androidx.work:work-runtime:2.12.0")
     // Disable transport-level retries for DELETE; platform URLConnection has no equivalent control.
-    implementation("com.squareup.okhttp3:okhttp:5.5.0")
+    implementation("com.squareup.okhttp3:okhttp:5.5.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.17")
 }
