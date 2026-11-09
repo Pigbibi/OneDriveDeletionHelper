@@ -6,6 +6,10 @@ import java.security.MessageDigest;
 import java.util.function.BooleanSupplier;
 
 public final class ContentHash {
+    /** The only digest shape this app stores: lowercase hex SHA-256 of the complete original bytes. */
+    public static boolean isValidDigest(String value) {
+        return value != null && value.matches("[a-f0-9]{64}");
+    }
     public static String sha256(InputStream input, long expectedSize, BooleanSupplier stopped) throws Exception {
         if (expectedSize <= 0) throw new IOException("Invalid media size");
         MessageDigest digest = MessageDigest.getInstance("SHA-256");

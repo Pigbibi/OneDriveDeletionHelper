@@ -27,4 +27,13 @@ public class MatchingAndHashTest {
     @Test public void historicalCloudOnlyFileNeverCreatesBinding() {
         assertTrue(new Matcher().propose(List.of(), List.of(new CloudItem("old", "old.jpg", "2020/",100,"v1",false)), Set.of("DCIM/"), List.of()).isEmpty());
     }
+    @Test public void onlyACompleteLowercaseDigestCountsAsReadableContent() {
+        String digest = "a".repeat(64);
+        assertTrue(ContentHash.isValidDigest(digest));
+        assertFalse(ContentHash.isValidDigest(digest.toUpperCase(Locale.ROOT)));
+        assertFalse(ContentHash.isValidDigest(digest.substring(1)));
+        assertFalse(ContentHash.isValidDigest(null));
+        assertTrue(new Media("key", "DCIM/", "a.jpg", 100, 1, 1, digest, false, false).readable());
+        assertFalse(new Media("key", "DCIM/", "a.jpg", 100, 1, 1, "", false, false).readable());
+    }
 }

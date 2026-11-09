@@ -43,6 +43,11 @@ public class AndroidIntegrationTest {
         Files.writeString(new File(context.getNoBackupFilesDir(),"state.json").toPath(),"{broken");
         assertThrows(AppFailure.class, () -> new Store(context).read());
     }
+    @Test public void stateRejectsBindingWhoseDigestIsNotComplete() throws Exception {
+        State s = new State(); Binding b = new Binding("cloud", "phone", "a".repeat(63), 100, "image.jpg", "Pictures/", "2026/09/image.jpg");
+        s.bindings.put(b.cloudId, b); Store store = new Store(context); store.write(s);
+        assertThrows(AppFailure.class, store::read);
+    }
     @Test public void partialPhotoAccessNeverCountsAsCompleteLibrary() {
         Shadows.shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.ACCESS_MEDIA_LOCATION);
         assertFalse(LocalScanner.permitted(context));

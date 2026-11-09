@@ -207,7 +207,7 @@ public final class MainActivity extends Activity {
                 check.setEnabled(!working);
                 LinearLayout details = column(); details.setPadding(dp(40), 0, 0, 0);
                 check.setOnCheckedChangeListener((button, checked) -> {
-                    if (checked && selected.size() >= 10) { check.setChecked(false); toast("每次最多确认 10 个文件"); return; }
+                    if (checked && selected.size() >= DeletionPolicy.MAX_MANUAL_BATCH) { check.setChecked(false); toast("每次最多确认 " + DeletionPolicy.MAX_MANUAL_BATCH + " 个文件"); return; }
                     if (checked) selected.add(b.cloudId); else selected.remove(b.cloudId);
                     card.setBackground(shape(checked ? errorContainer : surface, 0, R_CARD));
                     check.setTextColor(checked ? onErrorContainer : ink);
@@ -215,7 +215,7 @@ public final class MainActivity extends Activity {
                 });
                 card.addView(check);
                 card.addView(details);
-                boolean trashed = b.status.equals("TRASHED");
+                boolean trashed = b.status.equals(Binding.TRASHED);
                 chip(details, trashed ? "手机系统回收站" : "手机中未找到，需要你确认", trashed ? primaryContainer : errorContainer, trashed ? onPrimaryContainer : onErrorContainer);
                 gap(details, 8); text(details, b.cloudPath, 13, muted, false);
                 gap(details, 2); text(details, b.note + "，" + size(b.size), 13, muted, false);
@@ -227,12 +227,12 @@ public final class MainActivity extends Activity {
             recycleButton = action(confirm, "核对并清理所选（" + selected.size() + "）", DANGER, this::confirmRecycle);
             recycleButton.setEnabled(!working);
             action(body, "保留所选文件", OUTLINED, () -> mutate(s -> {
-                for (String id : selected) { Binding b = s.bindings.get(id); if (b != null) { b.status = "IGNORED"; b.note = "用户选择保留，不再自动清理"; } }
+                for (String id : selected) { Binding b = s.bindings.get(id); if (b != null) { b.status = Binding.IGNORED; b.note = "用户选择保留，不再自动清理"; } }
                 selected.clear();
             }));
         }
         gap(body, 28);
-        long held = state.bindings.values().stream().filter(b -> b.status.equals("HOLD") || b.status.equals("UNCERTAIN") || b.status.equals("SENDING")).count();
+        long held = state.bindings.values().stream().filter(Binding::needsReview).count();
         section("保留与记录");
         LinearLayout records = group();
         LinearLayout note = column(); note.setPadding(0, dp(12), 0, dp(8)); records.addView(note);
@@ -444,21 +444,21 @@ public final class MainActivity extends Activity {
     private void autoDialog() {
         if (state.automatic) { mutate(s -> s.automatic = false); return; }
         if (state.lastScan == 0 || !state.scheduled || !LocalScanner.permitted(this)) { toast("请先建立对应关系、允许全部照片访问，并开启定期检查"); return; }
-        if (state.bindings.values().stream().anyMatch(b -> b.status.equals("UNCERTAIN") || b.status.equals("SENDING"))) { toast("请先在预览中核对上次未确认的清理结果"); return; }
+        if (state.bindings.values().stream().anyMatch(Binding::uncertain)) { toast("请先在预览中核对上次未确认的清理结果"); return; }
         danger(new AlertDialog.Builder(this).setTitle("开启自动清理？")
                 .setMessage("仅处理手机系统明确标记为回收站、连续两次检查且满 24 小时的文件。\n\n每次最多 10 个，且大批量删除会暂停。执行前还会核对云端原文件内容。无法找到、隐藏或释放空间的照片仍需你手动确认。\n\n首次使用请先用测试照片验证。")
                 .setNegativeButton("暂不开启", null).setPositiveButton("开启自动清理", (d,w) -> mutate(s -> s.automatic = true)).show());
     }
     private void heldFiles() {
         List<Binding> held = new ArrayList<>();
-        for (Binding b : state.bindings.values()) if (b.status.equals("HOLD") || b.status.equals("UNCERTAIN") || b.status.equals("SENDING")) held.add(b);
+        for (Binding b : state.bindings.values()) if (b.needsReview()) held.add(b);
         if (held.isEmpty()) { toast("没有异常关联；未关联的历史文件将原样保留"); return; }
         String[] items = held.stream().map(b -> b.name + "\n" + b.note).toArray(String[]::new);
         new AlertDialog.Builder(this).setTitle("需要核对的文件").setItems(items, (d,i) -> {
             Binding b = held.get(i);
             new AlertDialog.Builder(this).setTitle(b.name).setMessage(b.cloudPath + "\n\n" + b.note + "\n\n请先到 OneDrive 核对。选择保留后，本应用不再处理这个关联。")
                     .setNegativeButton("返回", null).setNeutralButton("打开 OneDrive", (a,w) -> open("https://onedrive.live.com/"))
-                    .setPositiveButton("保留并停止跟踪", (a,w) -> mutate(s -> { Binding current = s.bindings.get(b.cloudId); if (current != null) { current.status = "IGNORED"; current.note = "用户已核对并停止跟踪"; } })).show();
+                    .setPositiveButton("保留并停止跟踪", (a,w) -> mutate(s -> { Binding current = s.bindings.get(b.cloudId); if (current != null) { current.status = Binding.IGNORED; current.note = "用户已核对并停止跟踪"; } })).show();
         }).setPositiveButton("关闭", null).show();
     }
     private void stopWork() {

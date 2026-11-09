@@ -23,11 +23,11 @@ public final class SyncEngine {
             final State s = state;
             if (background && !s.scheduled) return;
             if (s.clientId.isEmpty() || s.accountId.isEmpty() || s.driveId.isEmpty() || s.folders.isEmpty() || s.cloudRoots.isEmpty()) throw new AppFailure("CONFIG");
-            if (!approved.isEmpty() && (previewTime != s.lastScan || approved.size() > 10)) throw new AppFailure("CLOUD_CHANGED");
+            if (!approved.isEmpty() && (previewTime != s.lastScan || approved.size() > DeletionPolicy.MAX_MANUAL_BATCH)) throw new AppFailure("CLOUD_CHANGED");
             for (String id : approved) if (!s.bindings.containsKey(id) || !s.bindings.get(id).candidate()) throw new AppFailure("CLOUD_CHANGED");
             for (Binding b : s.bindings.values()) {
-                if (b.status.equals("SENDING")) { b.status = "UNCERTAIN"; b.note = "上次请求结果未确认，请到 OneDrive 核对"; }
-                if (b.status.equals("UNCERTAIN")) s.automatic = false;
+                if (b.status.equals(Binding.SENDING)) { b.status = Binding.UNCERTAIN; b.note = "上次请求结果未确认，请到 OneDrive 核对"; }
+                if (b.uncertain()) s.automatic = false;
             }
             store.write(s);
             LocalScanner scanner = new LocalScanner(context, stopped);
@@ -47,7 +47,7 @@ public final class SyncEngine {
                 if (b.terminal()) continue;
                 CloudItem cloud = byId.get(b.cloudId);
                 if (cloud == null || cloud.size() != b.size) {
-                    b.status = "HOLD"; b.note = "云端文件不在所选范围或已发生变化";
+                    b.status = Binding.HOLD; b.note = "云端文件不在所选范围或已发生变化";
                     b.firstMissing = 0; b.observations = 0;
                     continue;
                 }
@@ -93,7 +93,7 @@ public final class SyncEngine {
         } catch (Exception e) {
             AppFailure error = e instanceof AppFailure ? (AppFailure) e : new AppFailure("CONTENT");
             if (state != null) {
-                boolean uncertain = state.bindings.values().stream().anyMatch(b -> b.status.equals("SENDING") || b.status.equals("UNCERTAIN"));
+                boolean uncertain = state.bindings.values().stream().anyMatch(Binding::uncertain);
                 if (uncertain) error = new AppFailure("UNCERTAIN");
                 state.lastMessage = error.getMessage(); state.automatic = false;
                 if (error.code.equals("CANCELLED")) state.scheduled = false;
