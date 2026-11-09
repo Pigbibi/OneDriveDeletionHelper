@@ -5,6 +5,9 @@ import java.util.List;
 /** Missing media alone is not evidence of an intentional delete. */
 public final class DeletionPolicy {
     public static final long GRACE_MS = 24 * 60 * 60 * 1000L;
+    /** One confirmation covers at most this many files; the engine rejects a larger approved batch. */
+    public static final int MAX_MANUAL_BATCH = 10;
+    /** Element names are written to state.json as binding statuses, so they keep their spelling. */
     public enum Kind { PRESENT, TRASHED, MISSING, HOLD }
     public record Observation(Kind kind, String note) {}
 
@@ -28,9 +31,10 @@ public final class DeletionPolicy {
         return new Observation(Kind.MISSING, "手机中未找到，请确认是删除，而非移动、隐藏或释放空间");
     }
     public boolean canAutoDelete(String status, int observations, long firstMissing, long now, boolean enabled) {
-        return enabled && status.equals("TRASHED") && observations >= 2 && firstMissing > 0
+        return enabled && status.equals(Binding.TRASHED) && observations >= 2 && firstMissing > 0
                 && now >= firstMissing && now - firstMissing >= GRACE_MS;
     }
+    /** Caps a single automatic run so a bad match cannot sweep the library. */
     public boolean withinAutomaticLimit(int candidates, int tracked) {
         return candidates > 0 && candidates <= Math.min(10, Math.max(1, tracked / 5));
     }

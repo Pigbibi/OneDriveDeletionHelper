@@ -69,7 +69,7 @@ Microsoft Graph 的 `Files.ReadWrite` 权限本身包含读写能力，并非“
 
 ## 开发与构建
 
-使用 Java 17、Android SDK（`platforms;android-37.0`、`build-tools;36.0.0`）。Gradle Wrapper 9.6.1、Android Gradle Plugin 9.3.1；最低 Android API 30、目标 API 35。
+使用 Java 17、Android SDK（`platforms;android-37.0`、`build-tools;36.0.0`）。Gradle Wrapper 9.8.2、Android Gradle Plugin 9.5.0；最低 Android API 30、目标 API 35。
 
 ```sh
 ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
