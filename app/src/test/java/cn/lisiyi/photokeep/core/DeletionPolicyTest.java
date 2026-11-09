@@ -2,6 +2,8 @@ package cn.lisiyi.photokeep.core;
 
 import org.junit.Test;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 
 public class DeletionPolicyTest {
@@ -11,6 +13,11 @@ public class DeletionPolicyTest {
         return new Media(key, "Pictures/", "photo.jpg", 100, 1, 1, digest, trash, false);
     }
     private Binding link() { return new Binding("cloud", "phone", sha, 100, "photo.jpg", "Pictures/", "cloud/photo.jpg"); }
+    private Binding link(String status) { Binding b = link(); b.status = status; return b; }
+    private static List<String> vocabulary() {
+        return List.of(Binding.PRESENT, Binding.TRASHED, Binding.MISSING, Binding.HOLD,
+                Binding.SENDING, Binding.DONE, Binding.UNCERTAIN, Binding.IGNORED);
+    }
 
     @Test public void existingPhotoIsNeverCandidate() {
         assertEquals(DeletionPolicy.Kind.PRESENT, policy.observe(link(), List.of(item("phone", sha, false))).kind());
@@ -49,5 +56,13 @@ public class DeletionPolicyTest {
         assertTrue(policy.withinAutomaticLimit(1, 20));
         assertFalse(policy.withinAutomaticLimit(11, 1000));
         assertFalse(policy.withinAutomaticLimit(5, 10));
+    }
+    @Test public void onlyUnconfirmedDeletesPauseAutomaticCleanup() {
+        assertEquals(Set.of(Binding.SENDING, Binding.UNCERTAIN),
+                vocabulary().stream().filter(s -> link(s).uncertain()).collect(Collectors.toSet()));
+    }
+    @Test public void reviewListIsHoldsPlusUnconfirmedDeletes() {
+        assertEquals(Set.of(Binding.HOLD, Binding.SENDING, Binding.UNCERTAIN),
+                vocabulary().stream().filter(s -> link(s).needsReview()).collect(Collectors.toSet()));
     }
 }

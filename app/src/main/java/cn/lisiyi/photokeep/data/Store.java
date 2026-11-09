@@ -3,6 +3,7 @@ package cn.lisiyi.photokeep.data;
 import android.content.Context;
 import android.util.AtomicFile;
 import cn.lisiyi.photokeep.core.Binding;
+import cn.lisiyi.photokeep.core.ContentHash;
 import org.json.*;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,7 +44,7 @@ public final class Store {
                 binding.status = b.getString("status"); binding.note = b.getString("note");
                 binding.firstMissing = b.getLong("firstMissing"); binding.lastObserved = b.getLong("lastObserved");
                 binding.observations = b.getInt("observations");
-                if (!binding.sha256.matches("[a-f0-9]{64}") || binding.size <= 0 || s.bindings.containsKey(binding.cloudId)) throw new AppFailure("STATE");
+                if (!ContentHash.isValidDigest(binding.sha256) || binding.size <= 0 || s.bindings.containsKey(binding.cloudId)) throw new AppFailure("STATE");
                 s.bindings.put(binding.cloudId, binding);
             }
             return s;

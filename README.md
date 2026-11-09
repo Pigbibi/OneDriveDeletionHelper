@@ -72,7 +72,7 @@ Microsoft Graph's `Files.ReadWrite` permission itself includes read and write ca
 
 ## Develop and build
 
-Uses Java 17 and the Android SDK (`platforms;android-37.0`, `build-tools;36.0.0`), with Gradle Wrapper 9.6.1, Android Gradle Plugin 9.3.1, minimum Android API 30, and target API 35.
+Uses Java 17 and the Android SDK (`platforms;android-37.0`, `build-tools;36.0.0`), with Gradle Wrapper 9.8.2, Android Gradle Plugin 9.5.0, minimum Android API 30, and target API 35.
 
 ```sh
 ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug

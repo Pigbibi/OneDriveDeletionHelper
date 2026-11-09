@@ -17,23 +17,23 @@ public final class RecycleGuard {
         if (before.folder() || before.size() != b.size || before.etag().trim().isEmpty()
                 || !before.id().equals(b.cloudId)) throw new IllegalStateException("Cloud item changed");
         if (!b.sha256.equals(cloud.contentSha256(before))) {
-            b.status = "HOLD"; b.note = "云端内容与手机原记录不一致，保留文件"; journal.save();
+            b.status = Binding.HOLD; b.note = "云端内容与手机原记录不一致，保留文件"; journal.save();
             throw new IllegalStateException("Content mismatch");
         }
         CloudItem after = cloud.current(b.cloudId);
         if (after.folder() || after.size() != b.size || !after.id().equals(before.id()) || !after.etag().equals(before.etag()))
             throw new IllegalStateException("Cloud item changed during verification");
         localCheck.check();
-        b.status = "SENDING"; b.note = "正在请求移入 OneDrive 回收站";
+        b.status = Binding.SENDING; b.note = "正在请求移入 OneDrive 回收站";
         journal.save(); // Persist before sending, so process death cannot silently repeat an uncertain DELETE.
         try {
             cloud.recycle(after);
         } catch (Exception e) {
-            b.status = "UNCERTAIN"; b.note = "结果待人工核对，不会自动重试";
+            b.status = Binding.UNCERTAIN; b.note = "结果待人工核对，不会自动重试";
             journal.save();
             throw e;
         }
-        b.status = "DONE"; b.note = "已移入 OneDrive 回收站";
+        b.status = Binding.DONE; b.note = "已移入 OneDrive 回收站";
         journal.save();
     }
 }
