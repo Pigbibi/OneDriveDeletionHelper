@@ -49,7 +49,7 @@ val verifyMicrosoftRegistration by tasks.registering {
 tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(verifyMicrosoftRegistration) }
 dependencies {
     // Official Microsoft login handles browser authorization and its encrypted token cache.
-    implementation("com.microsoft.identity.client:msal:8.6.0")
+    implementation("com.microsoft.identity.client:msal:8.7.0")
     // Android's persistent scheduler survives process restarts and observes network constraints.
     implementation("androidx.work:work-runtime:2.12.0")
     // Disable transport-level retries for DELETE; platform URLConnection has no equivalent control.
