@@ -14,7 +14,7 @@ run and why. The commands are in the verification section of `AGENTS.md`:
 ## Risk and documentation
 
 Explain relevant compatibility, permissions, data and documentation changes.
-Follow `AGENTS.md` and `.github/engineering.md`.
+Follow `AGENTS.md`.
 
 ## Checklist
 
