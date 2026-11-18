@@ -1,5 +1,7 @@
 # 安装与连接教程
 
+[English](setup.md) | 简体中文
+
 ## 安装后直接登录
 
 1. 从 [Releases](https://github.com/Pigbibi/OneDriveDeletionHelper/releases) 下载最新版本的 `PhotoKeep-<版本>.apk`（当前 `0.3.1`），在 Android 11 或更新版本安装。

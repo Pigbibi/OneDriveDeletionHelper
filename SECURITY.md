@@ -4,7 +4,9 @@ PhotoKeep 直接连接你的 Microsoft 账号，能读取云端照片并把它�
 
 ## Reporting a vulnerability
 
-Report security vulnerabilities through [GitHub private vulnerability reporting](https://github.com/Pigbibi/OneDriveDeletionHelper/security/advisories/new). Do not post exploit details, credentials, private sessions or personal data in public issues or PRs. Include the affected version, impact and minimal redacted reproduction. The maintainer handles reports on a best-effort basis; no bounty or response-time guarantee is implied.
+Report security vulnerabilities through [GitHub private vulnerability reporting](https://github.com/Pigbibi/OneDriveDeletionHelper/security/advisories/new). Do not post exploit details, credentials, private sessions or personal data in public issues or PRs.
+
+Include the affected version, impact and minimal redacted reproduction. The maintainer handles reports on a best-effort basis; no bounty or response-time guarantee is implied.
 
 ## 不要公开粘贴的内容
 
