@@ -10,7 +10,7 @@ public final class State {
     public int intervalHours = 24;
     public long lastScan = 0;
     public int localCount = 0, cloudCount = 0, unresolvedCount = 0;
-    public String lastMessage = "先连接 OneDrive，再选择需要管理的照片目录。";
+    public String lastMessage = "pk:msg_initial";
     public final Set<String> folders = new TreeSet<>();
     public final Map<String, String> cloudRoots = new LinkedHashMap<>();
     public final Map<String, Binding> bindings = new LinkedHashMap<>();
@@ -34,16 +34,16 @@ public final class State {
             cloudRoots.clear(); driveId = ""; scheduled = false; resetMapping();
         }
         accountId = id; accountLabel = label == null ? "" : label;
-        lastMessage = "连接成功，请选择手机和 OneDrive 照片目录。";
+        lastMessage = "pk:msg_connected";
         return true;
     }
     public void resetMapping() {
         automatic = false; lastScan = 0; mediaVersion = "";
         bindings.clear(); localCount = cloudCount = unresolvedCount = 0;
-        lastMessage = "目录或连接已更新，请重新建立对应关系。";
+        lastMessage = "pk:msg_mapping_reset";
     }
     public void log(String message) {
-        history.add(0, new java.text.SimpleDateFormat("MM-dd HH:mm", Locale.CHINA).format(new Date()) + "  " + message);
+        history.add(0, new java.text.SimpleDateFormat("MM-dd HH:mm", Locale.ROOT).format(new Date()) + "  " + message);
         while (history.size() > 60) history.remove(history.size() - 1);
     }
 }

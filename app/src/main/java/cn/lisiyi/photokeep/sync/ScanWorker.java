@@ -18,17 +18,18 @@ public final class ScanWorker extends Worker {
     private ForegroundInfo foreground(String text) {
         Context context = getApplicationContext();
         NotificationManager manager = context.getSystemService(NotificationManager.class);
-        manager.createNotificationChannel(new NotificationChannel(CHANNEL, "照片检查", NotificationManager.IMPORTANCE_LOW));
+        manager.createNotificationChannel(new NotificationChannel(CHANNEL, context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_LOW));
         PendingIntent intent = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notification = new Notification.Builder(context, CHANNEL).setSmallIcon(R.drawable.ic_app)
-                .setContentTitle("拾光清理").setContentText(text).setContentIntent(intent).setOngoing(true).build();
+                .setContentTitle(context.getString(R.string.app_name)).setContentText(text).setContentIntent(intent).setOngoing(true).build();
         return new ForegroundInfo(101, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
     }
     @NonNull @Override public Result doWork() {
+        Context context = getApplicationContext();
         try {
-            setForegroundAsync(foreground("正在准备检查")).get();
+            setForegroundAsync(foreground(context.getString(R.string.work_preparing))).get();
             String[] approved = getInputData().getStringArray("approved");
-            new SyncEngine(getApplicationContext(), this::isStopped, text -> {
+            new SyncEngine(context, this::isStopped, text -> {
                 if (System.currentTimeMillis() - lastProgress < 1500) return;
                 lastProgress = System.currentTimeMillis();
                 setProgressAsync(new Data.Builder().putString("message", text).build());
@@ -37,9 +38,9 @@ public final class ScanWorker extends Worker {
             return Result.success();
         } catch (AppFailure e) {
             // No automatic WorkManager retry, especially after a write with an unknown outcome.
-            return Result.failure(new Data.Builder().putString("message", e.getMessage()).build());
+            return Result.failure(new Data.Builder().putString("message", e.message(context)).build());
         } catch (Exception e) {
-            return Result.failure(new Data.Builder().putString("message", "后台检查未完成，请打开应用重新检查。").build());
+            return Result.failure(new Data.Builder().putString("message", context.getString(R.string.work_failed_generic)).build());
         }
     }
 }

@@ -61,7 +61,7 @@ public class AndroidIntegrationTest {
     @Test public void resetScopeTurnsOffAutomaticDeletion() {
         State s = new State(); s.automatic=true; s.lastScan=50; s.resetMapping(); assertFalse(s.automatic); assertEquals(0,s.lastScan);
     }
-    @Test public void navigationRendersRealEmptyStatesAndSettings() {
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void navigationRendersRealEmptyStatesAndSettings() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             MainActivity activity=controller.get(); View root=activity.getWindow().getDecorView();
             assertNotNull(find(root,"登录 OneDrive")); find(root,"预览").performClick();
@@ -83,7 +83,7 @@ public class AndroidIntegrationTest {
         Store store = new Store(context); store.write(s);
         assertEquals(BuildConfig.MICROSOFT_CLIENT_ID, store.read().clientId);
     }
-    @Test public void unavailableLoginDoesNotAskOrdinaryUsersToRegisterApps() {
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void unavailableLoginDoesNotAskOrdinaryUsersToRegisterApps() {
         Assume.assumeTrue(BuildConfig.MICROSOFT_CLIENT_ID.isEmpty());
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             find(controller.get().getWindow().getDecorView(), "登录 OneDrive").performClick();
@@ -93,7 +93,7 @@ public class AndroidIntegrationTest {
             assertNull(findEdit(dialog.getWindow().getDecorView()));
         }
     }
-    @Test public void customClientIsAdvancedAndInvalidInputKeepsDialogOpen() {
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void customClientIsAdvancedAndInvalidInputKeepsDialogOpen() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             MainActivity activity = controller.get(); find(activity.getWindow().getDecorView(), "设置").performClick();
             find(activity.getWindow().getDecorView(), "高级连接设置").performClick();
