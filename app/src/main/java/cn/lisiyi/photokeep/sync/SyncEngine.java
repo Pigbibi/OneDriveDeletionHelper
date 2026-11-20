@@ -35,7 +35,7 @@ public final class SyncEngine {
             progress.accept(context.getString(R.string.progress_checking_local));
             LocalScanner.Snapshot local = scanner.scan(progress);
             boolean rebuilt = !s.mediaVersion.isEmpty() && !s.mediaVersion.equals(local.version());
-            if (rebuilt) { s.resetMapping(); approved = Set.of(); s.log(context.getString(R.string.log_media_rebuilt)); }
+            if (rebuilt) { s.resetMapping(); approved = Set.of(); s.log("pk:log_media_rebuilt"); }
             GraphApi graph = new GraphApi(context, s, stopped);
             progress.accept(context.getString(R.string.progress_listing_cloud));
             List<CloudItem> remote = graph.listSelected();
@@ -89,17 +89,16 @@ public final class SyncEngine {
                 new RecycleGuard().execute(b, graph, () -> scanner.assertUnchanged(local), () -> store.write(s));
                 completed++;
             }
-            if (completed > 0) s.lastMessage = context.getString(R.string.msg_recycled_count, completed);
-            s.log(AppText.resolve(context, s.lastMessage)); store.write(s);
+            if (completed > 0) s.lastMessage = AppText.recycledMessage(completed);
+            s.log(s.lastMessage); store.write(s);
         } catch (Exception e) {
             AppFailure error = e instanceof AppFailure ? (AppFailure) e : new AppFailure("CONTENT");
             if (state != null) {
                 boolean uncertain = state.bindings.values().stream().anyMatch(Binding::uncertain);
                 if (uncertain) error = new AppFailure("UNCERTAIN");
-                String errorMessage = error.message(context);
-                state.lastMessage = errorMessage; state.automatic = false;
-                if (error.code.equals("CANCELLED")) state.scheduled = false;
-                state.log(errorMessage); store.write(state);
+                state.lastMessage = AppText.errorMessage(error.code); state.automatic = false;
+                if ("CANCELLED".equals(error.code)) state.scheduled = false;
+                state.log(state.lastMessage); store.write(state);
             }
             throw error;
         } finally { Store.GATE.unlock(); }

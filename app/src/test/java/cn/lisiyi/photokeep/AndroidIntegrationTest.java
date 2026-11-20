@@ -147,6 +147,33 @@ public class AndroidIntegrationTest {
             assertEquals(0xFFF7F8FA, controller.get().getColor(R.color.pk_background));
         }
     }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void persistedFailureAndCountKeysFollowLanguageSwitch() throws Exception {
+        State s = new State();
+        s.lastMessage = AppText.errorMessage("NETWORK");
+        s.log(s.lastMessage);
+        s.log(AppText.recycledMessage(3));
+        s.log("pk:log_media_rebuilt");
+        Store store = new Store(context);
+        store.write(s);
+
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "网络或 OneDrive 暂时不可用，请稍后重试。"));
+            assertEquals("已核对内容并将 3 个文件移入 OneDrive 回收站。", AppText.resolve(controller.get(), AppText.recycledMessage(3)));
+            assertEquals("用户选择保留，不再自动清理", AppText.resolve(controller.get(), "pk:note_ignored_preview"));
+            assertEquals("用户已核对并停止跟踪", AppText.resolve(controller.get(), "pk:note_ignored_review"));
+            assertTrue(AppText.resolveHistory(controller.get(), store.read().history.get(0)).endsWith("  手机媒体库已重建，关闭自动清理并重新建立对应关系"));
+
+            AppPrefs.setLanguage(controller.get(), AppPrefs.LANG_EN);
+            controller.recreate();
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "Network or OneDrive is temporarily unavailable; please try again later."));
+            assertEquals("Verified content and moved 3 files to the OneDrive recycle bin.", AppText.resolve(controller.get(), AppText.recycledMessage(3)));
+            assertEquals("Kept by user; excluded from auto cleanup", AppText.resolve(controller.get(), "pk:note_ignored_preview"));
+            assertEquals("Reviewed by user; tracking stopped", AppText.resolve(controller.get(), "pk:note_ignored_review"));
+            assertTrue(AppText.resolveHistory(controller.get(), store.read().history.get(0)).endsWith("  Phone media library rebuilt; auto cleanup turned off and links reset"));
+            assertEquals("Legacy literal status", AppText.resolve(controller.get(), "Legacy literal status"));
+            assertEquals("11-20 14:00  Legacy history", AppText.resolveHistory(controller.get(), "11-20 14:00  Legacy history"));
+        }
+    }
     private static View find(View view,String text) {
         if(view instanceof TextView t && t.getText().toString().equals(text))return view;
         if(view instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++){View found=find(group.getChildAt(i),text);if(found!=null)return found;}

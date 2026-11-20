@@ -231,7 +231,7 @@ public final class MainActivity extends Activity {
             recycleButton = action(confirm, getString(R.string.action_verify_clean_selected, selected.size()), DANGER, this::confirmRecycle);
             recycleButton.setEnabled(!working);
             action(body, getString(R.string.action_keep_selected), OUTLINED, () -> mutate(s -> {
-                for (String id : selected) { Binding b = s.bindings.get(id); if (b != null) { b.status = Binding.IGNORED; b.note = getString(R.string.note_ignored_preview); } }
+                for (String id : selected) { Binding b = s.bindings.get(id); if (b != null) { b.status = Binding.IGNORED; b.note = "pk:note_ignored_preview"; } }
                 selected.clear();
             }));
         }
@@ -243,7 +243,7 @@ public final class MainActivity extends Activity {
         text(note, getString(R.string.records_summary, state.unresolvedCount, held), 14, muted, false);
         action(records, getString(R.string.action_view_held), ROW, this::heldFiles);
         action(records, getString(R.string.action_view_history), ROW, () -> new AlertDialog.Builder(this).setTitle(R.string.dialog_history_title)
-                .setMessage(state.history.isEmpty() ? getString(R.string.dialog_history_empty) : String.join("\n\n", state.history)).setPositiveButton(R.string.action_got_it, null).show());
+                .setMessage(state.history.isEmpty() ? getString(R.string.dialog_history_empty) : state.history.stream().map(entry -> AppText.resolveHistory(this, entry)).collect(java.util.stream.Collectors.joining("\n\n"))).setPositiveButton(R.string.action_got_it, null).show());
         external(action(records, getString(R.string.action_open_onedrive), ROW, () -> open("https://onedrive.live.com/")));
     }
     private void settings() {
@@ -500,7 +500,7 @@ public final class MainActivity extends Activity {
             Binding b = held.get(i);
             new AlertDialog.Builder(this).setTitle(b.name).setMessage(getString(R.string.dialog_held_item_message, b.cloudPath, AppText.resolve(this, b.note)))
                     .setNegativeButton(R.string.action_back, null).setNeutralButton(R.string.action_open_onedrive, (a,w) -> open("https://onedrive.live.com/"))
-                    .setPositiveButton(R.string.action_keep_stop_tracking, (a,w) -> mutate(s -> { Binding current = s.bindings.get(b.cloudId); if (current != null) { current.status = Binding.IGNORED; current.note = getString(R.string.note_ignored_review); } })).show();
+                    .setPositiveButton(R.string.action_keep_stop_tracking, (a,w) -> mutate(s -> { Binding current = s.bindings.get(b.cloudId); if (current != null) { current.status = Binding.IGNORED; current.note = "pk:note_ignored_review"; } })).show();
         }).setPositiveButton(R.string.action_close, null).show();
     }
     private void stopWork() {
