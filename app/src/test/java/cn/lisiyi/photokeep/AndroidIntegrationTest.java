@@ -61,7 +61,7 @@ public class AndroidIntegrationTest {
     @Test public void resetScopeTurnsOffAutomaticDeletion() {
         State s = new State(); s.automatic=true; s.lastScan=50; s.resetMapping(); assertFalse(s.automatic); assertEquals(0,s.lastScan);
     }
-    @Test public void navigationRendersRealEmptyStatesAndSettings() {
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void navigationRendersRealEmptyStatesAndSettings() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             MainActivity activity=controller.get(); View root=activity.getWindow().getDecorView();
             assertNotNull(find(root,"登录 OneDrive")); find(root,"预览").performClick();
@@ -83,7 +83,7 @@ public class AndroidIntegrationTest {
         Store store = new Store(context); store.write(s);
         assertEquals(BuildConfig.MICROSOFT_CLIENT_ID, store.read().clientId);
     }
-    @Test public void unavailableLoginDoesNotAskOrdinaryUsersToRegisterApps() {
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void unavailableLoginDoesNotAskOrdinaryUsersToRegisterApps() {
         Assume.assumeTrue(BuildConfig.MICROSOFT_CLIENT_ID.isEmpty());
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             find(controller.get().getWindow().getDecorView(), "登录 OneDrive").performClick();
@@ -93,7 +93,7 @@ public class AndroidIntegrationTest {
             assertNull(findEdit(dialog.getWindow().getDecorView()));
         }
     }
-    @Test public void customClientIsAdvancedAndInvalidInputKeepsDialogOpen() {
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void customClientIsAdvancedAndInvalidInputKeepsDialogOpen() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             MainActivity activity = controller.get(); find(activity.getWindow().getDecorView(), "设置").performClick();
             find(activity.getWindow().getDecorView(), "高级连接设置").performClick();
@@ -111,6 +111,68 @@ public class AndroidIntegrationTest {
         assertTrue(GraphApi.downloadHostAllowed("example.sharepoint.com"));
         assertFalse(GraphApi.downloadHostAllowed("1drv.com.attacker.example"));
         assertFalse(GraphApi.downloadHostAllowed("127.0.0.1"));
+    }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void languageOptionSwitchesBetweenChineseAndEnglish() {
+        assertEquals(AppPrefs.LANG_SYSTEM, AppPrefs.language(context));
+        AppPrefs.setLanguage(context, AppPrefs.LANG_EN);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "Sign in to OneDrive"));
+            AppPrefs.setLanguage(controller.get(), AppPrefs.LANG_ZH);
+            controller.recreate();
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "登录 OneDrive"));
+        }
+    }
+    @Test @Config(sdk = {30, 35}, qualifiers = "en") public void englishSystemUsesEnglishStringsAndAllowsChineseOverride() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "Sign in to OneDrive"));
+            AppPrefs.setLanguage(controller.get(), AppPrefs.LANG_ZH);
+            controller.recreate();
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "登录 OneDrive"));
+        }
+    }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh-notnight") public void themeOptionCanForceDarkOnLightSystem() {
+        assertEquals(AppPrefs.THEME_SYSTEM, AppPrefs.theme(context));
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertEquals(0xFFF7F8FA, controller.get().getColor(R.color.pk_background));
+            AppPrefs.setTheme(controller.get(), AppPrefs.THEME_DARK);
+            controller.recreate();
+            assertEquals(0xFF0F1217, controller.get().getColor(R.color.pk_background));
+        }
+    }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh-night") public void themeOptionCanForceLightOnDarkSystem() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertEquals(0xFF0F1217, controller.get().getColor(R.color.pk_background));
+            AppPrefs.setTheme(controller.get(), AppPrefs.THEME_LIGHT);
+            controller.recreate();
+            assertEquals(0xFFF7F8FA, controller.get().getColor(R.color.pk_background));
+        }
+    }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void persistedFailureAndCountKeysFollowLanguageSwitch() throws Exception {
+        State s = new State();
+        s.lastMessage = AppText.errorMessage("NETWORK");
+        s.log(s.lastMessage);
+        s.log(AppText.recycledMessage(3));
+        s.log("pk:log_media_rebuilt");
+        Store store = new Store(context);
+        store.write(s);
+
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "网络或 OneDrive 暂时不可用，请稍后重试。"));
+            assertEquals("已核对内容并将 3 个文件移入 OneDrive 回收站。", AppText.resolve(controller.get(), AppText.recycledMessage(3)));
+            assertEquals("用户选择保留，不再自动清理", AppText.resolve(controller.get(), "pk:note_ignored_preview"));
+            assertEquals("用户已核对并停止跟踪", AppText.resolve(controller.get(), "pk:note_ignored_review"));
+            assertTrue(AppText.resolveHistory(controller.get(), store.read().history.get(0)).endsWith("  手机媒体库已重建，关闭自动清理并重新建立对应关系"));
+
+            AppPrefs.setLanguage(controller.get(), AppPrefs.LANG_EN);
+            controller.recreate();
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "Network or OneDrive is temporarily unavailable; please try again later."));
+            assertEquals("Verified content and moved 3 files to the OneDrive recycle bin.", AppText.resolve(controller.get(), AppText.recycledMessage(3)));
+            assertEquals("Kept by user; excluded from auto cleanup", AppText.resolve(controller.get(), "pk:note_ignored_preview"));
+            assertEquals("Reviewed by user; tracking stopped", AppText.resolve(controller.get(), "pk:note_ignored_review"));
+            assertTrue(AppText.resolveHistory(controller.get(), store.read().history.get(0)).endsWith("  Phone media library rebuilt; auto cleanup turned off and links reset"));
+            assertEquals("Legacy literal status", AppText.resolve(controller.get(), "Legacy literal status"));
+            assertEquals("11-20 14:00  Legacy history", AppText.resolveHistory(controller.get(), "11-20 14:00  Legacy history"));
+        }
     }
     private static View find(View view,String text) {
         if(view instanceof TextView t && t.getText().toString().equals(text))return view;

@@ -1,6 +1,7 @@
 package cn.lisiyi.photokeep.sync;
 
 import android.content.Context;
+import cn.lisiyi.photokeep.R;
 import cn.lisiyi.photokeep.core.*;
 import cn.lisiyi.photokeep.data.*;
 import java.util.*;
@@ -26,17 +27,17 @@ public final class SyncEngine {
             if (!approved.isEmpty() && (previewTime != s.lastScan || approved.size() > DeletionPolicy.MAX_MANUAL_BATCH)) throw new AppFailure("CLOUD_CHANGED");
             for (String id : approved) if (!s.bindings.containsKey(id) || !s.bindings.get(id).candidate()) throw new AppFailure("CLOUD_CHANGED");
             for (Binding b : s.bindings.values()) {
-                if (b.status.equals(Binding.SENDING)) { b.status = Binding.UNCERTAIN; b.note = "上次请求结果未确认，请到 OneDrive 核对"; }
+                if (b.status.equals(Binding.SENDING)) { b.status = Binding.UNCERTAIN; b.note = "pk:note_uncertain_previous"; }
                 if (b.uncertain()) s.automatic = false;
             }
             store.write(s);
             LocalScanner scanner = new LocalScanner(context, stopped);
-            progress.accept("正在检查手机媒体库");
+            progress.accept(context.getString(R.string.progress_checking_local));
             LocalScanner.Snapshot local = scanner.scan(progress);
             boolean rebuilt = !s.mediaVersion.isEmpty() && !s.mediaVersion.equals(local.version());
-            if (rebuilt) { s.resetMapping(); approved = Set.of(); s.log("手机媒体库已重建，关闭自动清理并重新建立对应关系"); }
+            if (rebuilt) { s.resetMapping(); approved = Set.of(); s.log("pk:log_media_rebuilt"); }
             GraphApi graph = new GraphApi(context, s, stopped);
-            progress.accept("正在读取 OneDrive 所选目录");
+            progress.accept(context.getString(R.string.progress_listing_cloud));
             List<CloudItem> remote = graph.listSelected();
             scanner.assertUnchanged(local);
             Map<String, CloudItem> byId = new HashMap<>();
@@ -47,7 +48,7 @@ public final class SyncEngine {
                 if (b.terminal()) continue;
                 CloudItem cloud = byId.get(b.cloudId);
                 if (cloud == null || cloud.size() != b.size) {
-                    b.status = Binding.HOLD; b.note = "云端文件不在所选范围或已发生变化";
+                    b.status = Binding.HOLD; b.note = "pk:note_cloud_out_of_scope";
                     b.firstMissing = 0; b.observations = 0;
                     continue;
                 }
@@ -68,7 +69,7 @@ public final class SyncEngine {
             s.localCount = (int) local.media().stream().filter(m -> !m.trashed() && s.folders.stream().anyMatch(f -> DeletionPolicy.isWithin(m.folder(), f))).count();
             s.cloudCount = remote.size();
             s.unresolvedCount = (int) remote.stream().filter(c -> !s.bindings.containsKey(c.id())).count();
-            s.lastMessage = "检查完成。未关联的云端照片会保留；清理前还会逐个核对文件内容。";
+            s.lastMessage = "pk:msg_scan_done";
             store.write(s);
 
             List<Binding> targets = new ArrayList<>();
@@ -78,26 +79,26 @@ public final class SyncEngine {
                 for (Binding b : s.bindings.values()) if (policy.canAutoDelete(b.status, b.observations, b.firstMissing, now, s.automatic)) targets.add(b);
                 if (!targets.isEmpty() && !policy.withinAutomaticLimit(targets.size(), s.bindings.size())) {
                     targets.clear(); s.automatic = false;
-                    s.lastMessage = "待自动清理数量较多，已暂停自动清理，请先预览确认。";
+                    s.lastMessage = "pk:msg_auto_limit_paused";
                 }
             }
             int completed = 0;
             for (Binding b : targets) {
                 if (stopped.getAsBoolean()) throw new AppFailure("CANCELLED");
-                progress.accept("正在核对清理文件 " + (completed + 1) + " / " + targets.size() + "（需要读取云端原文件）");
+                progress.accept(context.getString(R.string.progress_verifying_file, completed + 1, targets.size()));
                 new RecycleGuard().execute(b, graph, () -> scanner.assertUnchanged(local), () -> store.write(s));
                 completed++;
             }
-            if (completed > 0) s.lastMessage = "已核对内容并将 " + completed + " 个文件移入 OneDrive 回收站。";
+            if (completed > 0) s.lastMessage = AppText.recycledMessage(completed);
             s.log(s.lastMessage); store.write(s);
         } catch (Exception e) {
             AppFailure error = e instanceof AppFailure ? (AppFailure) e : new AppFailure("CONTENT");
             if (state != null) {
                 boolean uncertain = state.bindings.values().stream().anyMatch(Binding::uncertain);
                 if (uncertain) error = new AppFailure("UNCERTAIN");
-                state.lastMessage = error.getMessage(); state.automatic = false;
-                if (error.code.equals("CANCELLED")) state.scheduled = false;
-                state.log(error.getMessage()); store.write(state);
+                state.lastMessage = AppText.errorMessage(error.code); state.automatic = false;
+                if ("CANCELLED".equals(error.code)) state.scheduled = false;
+                state.log(state.lastMessage); store.write(state);
             }
             throw error;
         } finally { Store.GATE.unlock(); }

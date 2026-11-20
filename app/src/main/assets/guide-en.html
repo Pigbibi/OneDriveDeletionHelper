@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>User Guide</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #E7EBF1;
+  --text: #171C23;
+  --muted: #454E5B;
+  --accent: #2A5B9C;
+  --rule: #C7CFDA;
+  --node: #E7EBF1;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #242932; --text: #E2E6EC; --muted: #B9C1CD; --accent: #A8C7FA; --rule: #434B57; --node: #242932; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; color: var(--text); background: var(--bg);
+  font: 16px/1.75 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow-wrap: anywhere;
+}
+.doc { max-width: 680px; padding: 8px 16px 32px; }
+h2 { margin: 8px 0 16px; font-size: 24px; line-height: 1.35; font-weight: 600; letter-spacing: 0.01em; }
+h2 + p { font-size: 17px; color: var(--text); margin-bottom: 28px; }
+p { margin: 0 0 14px; color: var(--muted); }
+a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+/* Guide: the numbered sections are a real sequence, so they sit on one rail. */
+.guide h3 {
+  position: relative; margin: 0; padding: 0 0 8px 28px;
+  font-size: 17px; line-height: 1.5; font-weight: 600; color: var(--text);
+}
+.guide h3::before {
+  content: ""; position: absolute; left: 2px; top: 6px; width: 12px; height: 12px;
+  border: 2px solid var(--accent); border-radius: 50%; background: var(--node);
+}
+.guide h3 ~ p { margin: 0; padding: 0 0 14px 28px; border-left: 2px solid var(--rule); margin-left: 7px; padding-left: 19px; }
+.guide h3 + p { margin-top: -8px; padding-top: 8px; }
+.guide h3:not(:first-of-type) { border-left: 2px solid var(--rule); margin-left: 7px; padding-left: 19px; padding-top: 18px; }
+.guide h3:not(:first-of-type)::before { left: -9px; top: 24px; }
+.guide h3:first-of-type { margin-left: 7px; padding-left: 21px; }
+.guide h3:first-of-type::before { left: -7px; }
+.guide p:last-child { border-left-color: transparent; padding-top: 18px; }
+/* Privacy: a plain reading column; the copyright line closes the document. */
+.privacy p { color: var(--text); }
+.privacy p:last-child { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+@media (min-width: 900px) {
+  .doc {
+    max-width: none; display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 640px);
+    column-gap: 72px; padding: 72px 6vw 96px; align-items: start;
+  }
+  .doc > h2 { grid-column: 1; grid-row: 1 / span 60; position: sticky; top: 72px; font-size: 32px; margin: 0; }
+  .doc > :not(h2) { grid-column: 2; }
+  h2 + p { margin-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<main class="doc guide">
+<h2>Getting Started with PhotoKeep</h2>
+<p>Keep the official OneDrive app for automatic backups. PhotoKeep only checks photo links and cleans up deleted items; it never uploads photos or changes year-month folders.</p>
+<h3>1. Sign in to OneDrive</h3>
+<p>Tap "Sign in to OneDrive", sign in with your account on Microsoft's official page, grant permission, and return to the app. Release packages include a default connection; ordinary users do not need to register a Microsoft app, enter a Client ID, or use a client secret.</p>
+<p>Work or school accounts may require organization administrator approval. This project has not completed Microsoft publisher verification, so self-consent depends on your organization's policy.</p>
+<p>Upgrading over an older build keeps your custom connection and existing photo links. To switch back to the default connection, open "Settings → Advanced connection settings → Restore default connection"; afterward you will need to sign in again, reselect OneDrive folders, and rebuild links.</p>
+<p>Only users building from source or using their own app registration need "Advanced connection settings → Custom Client ID". <a href="https://github.com/Pigbibi/OneDriveDeletionHelper/blob/main/docs/microsoft-app.md">View developer guide</a>.</p>
+<h3>2. Select managed folders</h3>
+<p>Allow access to all photos, videos, and original media info; if only partial photo access is granted, the app pauses checks. Select internal storage folders such as Camera, Pictures, and Screenshots.</p>
+<p>Add the matching OneDrive photo folders; you can choose multiple folders including subfolders. Phone folders do not need to match cloud year-month folders. Start with a dedicated test folder on your first run.</p>
+<h3>3. Build photo links</h3>
+<p>Connect to Wi-Fi and tap "Build initial links" on Overview. Local files are hashed locally; candidate links are paired with cloud items. Cloud originals are only downloaded to verify content right before recycling, so large videos take longer.</p>
+<p>The first check never cleans up older extra files. Files with the same name and size but different content are never deleted; items with multiple possible matches are also kept.</p>
+<h3>4. Verify cleanup</h3>
+<p>Take a few test photos, wait for OneDrive to upload them, and build links. Delete one on your phone, then tap "Check photos now". Select and verify it in "Cleanup Preview", then confirm to move it to the OneDrive recycle bin.</p>
+<p>Also test moving a photo, renaming it, keeping another identical copy, and revoking photo permissions to confirm nothing is deleted by mistake.</p>
+<h3>5. Scheduled checks &amp; auto cleanup</h3>
+<p>You can schedule checks every 6 hours, 12 hours, or daily, running only on Wi-Fi when battery is not low. Allow notifications in app settings and adjust background or battery optimization limits as needed. Some devices also provide an auto-start toggle whose name varies by OS. Actual timing depends on OS scheduling.</p>
+<p>Auto cleanup is off by default. When enabled, it only processes files explicitly marked as trashed by the phone OS across two consecutive valid checks spanning at least 24 hours. At most 10 files run per batch, and batches exceeding roughly 20% of linked files pause automatically (at most 1 when fewer than 5 links exist).</p>
+<p>Files that simply disappear from the phone cannot be distinguished from moves, hiding, or storage freeing, so they always require manual confirmation. Deletions in Google Photos that do not appear in the Android OS trash follow the same rule.</p>
+<h3>Troubleshooting</h3>
+<p>Incomplete checks never treat missing data as deletions. When a recycle request has an uncertain outcome, auto cleanup pauses and never retries automatically; check OneDrive first, then choose "Keep &amp; stop tracking" in Preview.</p>
+<p>Install APK updates directly over the existing app instead of uninstalling first; uninstalling erases local links. Cloud files remain untouched. Only install packages signed with the same release key.</p>
+<p>Project &amp; feedback: <a href="https://github.com/Pigbibi/OneDriveDeletionHelper">Pigbibi / OneDriveDeletionHelper</a></p>
+</main>
+</body>
+</html>

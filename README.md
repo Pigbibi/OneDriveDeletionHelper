@@ -28,7 +28,7 @@ Screenshots show the real app running in an Android 15 emulator, without real ph
 - Select multiple OneDrive photo directories, read recursively, and handle pagination. Phone and cloud directory layouts don't have to match, so existing year/month folders are preserved.
 - Check content hashes of local photos and videos; cloud files are kept when they moved, were renamed, or still have an identical local copy.
 - Manual check, cleanup preview, per-item confirmation, keep-selected, and recent history.
-- Light and dark themes, plus an in-app help page.
+- Light and dark themes with an in-app System / Light / Dark option, a Chinese / English language option, plus an in-app help page.
 - Background checks every 6 hours, 12 hours, or daily over Wi-Fi; the system may postpone them.
 - Optional automatic cleanup: off by default, and only for files the **system explicitly marks as trashed**, with two consecutive valid checks and 24 hours elapsed.
 - Before deleting, stream the cloud original to verify SHA-256 and the full byte count; re-confirm the file version, directory scope, and phone media-library state.

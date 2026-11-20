@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.*;
 import android.provider.MediaStore;
+import cn.lisiyi.photokeep.R;
 import cn.lisiyi.photokeep.core.*;
 import java.io.InputStream;
 import java.util.*;
@@ -58,7 +59,7 @@ public final class LocalScanner {
                     catch (Exception e) { digest = ""; }
                 }
                 hashed.add(new Media(row.key(), row.folder(), row.name(), row.size(), row.modified(), row.generation(), digest, row.trashed(), row.pending()));
-                if (++index % 20 == 0 || index == rows.size()) progress.accept("正在读取手机照片 " + index + " / " + rows.size());
+                if (++index % 20 == 0 || index == rows.size()) progress.accept(context.getString(R.string.progress_scanning_local, index, rows.size()));
             }
         } catch (AppFailure e) { throw e; }
         catch (Exception e) { throw new AppFailure("STATE"); }
