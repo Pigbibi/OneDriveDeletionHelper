@@ -130,6 +130,23 @@ public class AndroidIntegrationTest {
             assertNotNull(find(controller.get().getWindow().getDecorView(), "登录 OneDrive"));
         }
     }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh-notnight") public void themeOptionCanForceDarkOnLightSystem() {
+        assertEquals(AppPrefs.THEME_SYSTEM, AppPrefs.theme(context));
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertEquals(0xFFF7F8FA, controller.get().getColor(R.color.pk_background));
+            AppPrefs.setTheme(controller.get(), AppPrefs.THEME_DARK);
+            controller.recreate();
+            assertEquals(0xFF0F1217, controller.get().getColor(R.color.pk_background));
+        }
+    }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh-night") public void themeOptionCanForceLightOnDarkSystem() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertEquals(0xFF0F1217, controller.get().getColor(R.color.pk_background));
+            AppPrefs.setTheme(controller.get(), AppPrefs.THEME_LIGHT);
+            controller.recreate();
+            assertEquals(0xFFF7F8FA, controller.get().getColor(R.color.pk_background));
+        }
+    }
     private static View find(View view,String text) {
         if(view instanceof TextView t && t.getText().toString().equals(text))return view;
         if(view instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++){View found=find(group.getChildAt(i),text);if(found!=null)return found;}

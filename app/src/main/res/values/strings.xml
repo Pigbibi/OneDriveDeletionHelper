@@ -108,6 +108,11 @@
     <string name="lang_system">跟随系统</string>
     <string name="lang_zh">中文</string>
     <string name="lang_en">English</string>
+    <string name="action_theme">外观：%1$s</string>
+    <string name="dialog_theme_title">外观</string>
+    <string name="theme_system">跟随系统</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
     <string name="section_about">关于拾光</string>
     <string name="action_setup_guide">安装与连接教程</string>
     <string name="title_guide">使用教程</string>

@@ -289,6 +289,9 @@ public final class MainActivity extends Activity {
         String lang = AppPrefs.language(this);
         int langLabel = AppPrefs.LANG_ZH.equals(lang) ? R.string.lang_zh : AppPrefs.LANG_EN.equals(lang) ? R.string.lang_en : R.string.lang_system;
         action(appearance, getString(R.string.action_language, getString(langLabel)), ROW, this::languageDialog);
+        String theme = AppPrefs.theme(this);
+        int themeLabel = AppPrefs.THEME_LIGHT.equals(theme) ? R.string.theme_light : AppPrefs.THEME_DARK.equals(theme) ? R.string.theme_dark : R.string.theme_system;
+        action(appearance, getString(R.string.action_theme, getString(themeLabel)), ROW, this::themeDialog);
         gap(body, 28); section(getString(R.string.section_about));
         LinearLayout about = group();
         action(about, getString(R.string.action_setup_guide), ROW, () -> guide(getString(R.string.asset_guide), getString(R.string.title_guide)));
@@ -465,6 +468,21 @@ public final class MainActivity extends Activity {
                 })
                 .setNegativeButton(R.string.action_cancel, null).show();
     }
+    private void themeDialog() {
+        String[] values = {AppPrefs.THEME_SYSTEM, AppPrefs.THEME_LIGHT, AppPrefs.THEME_DARK};
+        String[] labels = {getString(R.string.theme_system), getString(R.string.theme_light), getString(R.string.theme_dark)};
+        String current = AppPrefs.theme(this);
+        int checked = AppPrefs.THEME_LIGHT.equals(current) ? 1 : AppPrefs.THEME_DARK.equals(current) ? 2 : 0;
+        new AlertDialog.Builder(this).setTitle(R.string.dialog_theme_title)
+                .setSingleChoiceItems(labels, checked, (d, i) -> {
+                    d.dismiss();
+                    if (!values[i].equals(current)) {
+                        AppPrefs.setTheme(this, values[i]);
+                        recreate();
+                    }
+                })
+                .setNegativeButton(R.string.action_cancel, null).show();
+    }
     private void autoDialog() {
         if (state.automatic) { mutate(s -> s.automatic = false); return; }
         if (state.lastScan == 0 || !state.scheduled || !LocalScanner.permitted(this)) { toast(getString(R.string.toast_auto_prereq)); return; }
@@ -541,8 +559,16 @@ public final class MainActivity extends Activity {
                 open(request.getUrl().toString()); return true;
             }
         });
-        web.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+        web.loadDataWithBaseURL(null, applyDocumentTheme(html), "text/html", "utf-8", null);
         return web;
+    }
+    private String applyDocumentTheme(String html) {
+        String theme = AppPrefs.theme(this);
+        if (AppPrefs.THEME_SYSTEM.equals(theme)) return html;
+        String override = AppPrefs.THEME_DARK.equals(theme)
+                ? "<style>:root{color-scheme:dark;--bg:#242932;--text:#E2E6EC;--muted:#B9C1CD;--accent:#A8C7FA;--rule:#434B57;--node:#242932;}</style>"
+                : "<style>:root{color-scheme:light;--bg:#E7EBF1;--text:#171C23;--muted:#454E5B;--accent:#2A5B9C;--rule:#C7CFDA;--node:#E7EBF1;}@media (prefers-color-scheme:dark){:root{color-scheme:light;--bg:#E7EBF1;--text:#171C23;--muted:#454E5B;--accent:#2A5B9C;--rule:#C7CFDA;--node:#E7EBF1;}}</style>";
+        return html.replace("</head>", override + "</head>");
     }
     private void danger(AlertDialog dialog) {
         Button confirm = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
