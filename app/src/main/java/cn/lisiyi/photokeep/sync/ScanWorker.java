@@ -9,6 +9,7 @@ import androidx.work.*;
 import cn.lisiyi.photokeep.MainActivity;
 import cn.lisiyi.photokeep.R;
 import cn.lisiyi.photokeep.data.AppFailure;
+import cn.lisiyi.photokeep.data.AppPrefs;
 import java.util.*;
 
 public final class ScanWorker extends Worker {
@@ -16,16 +17,17 @@ public final class ScanWorker extends Worker {
     private long lastProgress = 0;
     public ScanWorker(@NonNull Context context, @NonNull WorkerParameters parameters) { super(context, parameters); }
     private ForegroundInfo foreground(String text) {
-        Context context = getApplicationContext();
-        NotificationManager manager = context.getSystemService(NotificationManager.class);
-        manager.createNotificationChannel(new NotificationChannel(CHANNEL, context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_LOW));
-        PendingIntent intent = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-        Notification notification = new Notification.Builder(context, CHANNEL).setSmallIcon(R.drawable.ic_app)
-                .setContentTitle(context.getString(R.string.app_name)).setContentText(text).setContentIntent(intent).setOngoing(true).build();
+        Context app = getApplicationContext();
+        Context localized = AppPrefs.wrap(app);
+        NotificationManager manager = app.getSystemService(NotificationManager.class);
+        manager.createNotificationChannel(new NotificationChannel(CHANNEL, localized.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_LOW));
+        PendingIntent intent = PendingIntent.getActivity(app, 0, new Intent(app, MainActivity.class), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification notification = new Notification.Builder(app, CHANNEL).setSmallIcon(R.drawable.ic_app)
+                .setContentTitle(localized.getString(R.string.app_name)).setContentText(text).setContentIntent(intent).setOngoing(true).build();
         return new ForegroundInfo(101, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
     }
     @NonNull @Override public Result doWork() {
-        Context context = getApplicationContext();
+        Context context = AppPrefs.wrap(getApplicationContext());
         try {
             setForegroundAsync(foreground(context.getString(R.string.work_preparing))).get();
             String[] approved = getInputData().getStringArray("approved");

@@ -102,6 +102,12 @@
     <string name="dialog_background_message">在手机的应用设置中允许通知，并按需调整后台运行或电池优化限制。部分系统另有自启动选项，菜单名称因设备及系统版本而异。系统仍可能推迟检查，打开应用可手动检查。</string>
     <string name="action_open_app_settings">打开应用设置</string>
     <string name="cleanup_auto_hint">自动清理仅处理系统明确标记为回收站、连续两次检查且满 24 小时的文件。只是不见了的照片仍需手动确认。</string>
+    <string name="section_appearance_language">外观与语言</string>
+    <string name="action_language">语言：%1$s</string>
+    <string name="dialog_language_title">界面语言</string>
+    <string name="lang_system">跟随系统</string>
+    <string name="lang_zh">中文</string>
+    <string name="lang_en">English</string>
     <string name="section_about">关于拾光</string>
     <string name="action_setup_guide">安装与连接教程</string>
     <string name="title_guide">使用教程</string>

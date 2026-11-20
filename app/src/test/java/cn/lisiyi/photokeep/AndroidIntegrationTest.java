@@ -112,6 +112,24 @@ public class AndroidIntegrationTest {
         assertFalse(GraphApi.downloadHostAllowed("1drv.com.attacker.example"));
         assertFalse(GraphApi.downloadHostAllowed("127.0.0.1"));
     }
+    @Test @Config(sdk = {30, 35}, qualifiers = "zh") public void languageOptionSwitchesBetweenChineseAndEnglish() {
+        assertEquals(AppPrefs.LANG_SYSTEM, AppPrefs.language(context));
+        AppPrefs.setLanguage(context, AppPrefs.LANG_EN);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "Sign in to OneDrive"));
+            AppPrefs.setLanguage(controller.get(), AppPrefs.LANG_ZH);
+            controller.recreate();
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "登录 OneDrive"));
+        }
+    }
+    @Test @Config(sdk = {30, 35}, qualifiers = "en") public void englishSystemUsesEnglishStringsAndAllowsChineseOverride() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "Sign in to OneDrive"));
+            AppPrefs.setLanguage(controller.get(), AppPrefs.LANG_ZH);
+            controller.recreate();
+            assertNotNull(find(controller.get().getWindow().getDecorView(), "登录 OneDrive"));
+        }
+    }
     private static View find(View view,String text) {
         if(view instanceof TextView t && t.getText().toString().equals(text))return view;
         if(view instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++){View found=find(group.getChildAt(i),text);if(found!=null)return found;}

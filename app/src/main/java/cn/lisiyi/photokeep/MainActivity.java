@@ -38,6 +38,10 @@ public final class MainActivity extends Activity {
     private Button recycleButton;
     private androidx.lifecycle.LiveData<List<WorkInfo>> manualData, periodicData;
 
+    @Override protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(AppPrefs.wrap(newBase));
+    }
+
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) page = savedInstanceState.getInt("page", 0);
@@ -280,6 +284,11 @@ public final class MainActivity extends Activity {
         });
         LinearLayout hint = column(); hint.setPadding(0, dp(4), 0, dp(14)); cleanup.addView(hint);
         text(hint, getString(R.string.cleanup_auto_hint), 13, muted, false);
+        gap(body, 28); section(getString(R.string.section_appearance_language));
+        LinearLayout appearance = group();
+        String lang = AppPrefs.language(this);
+        int langLabel = AppPrefs.LANG_ZH.equals(lang) ? R.string.lang_zh : AppPrefs.LANG_EN.equals(lang) ? R.string.lang_en : R.string.lang_system;
+        action(appearance, getString(R.string.action_language, getString(langLabel)), ROW, this::languageDialog);
         gap(body, 28); section(getString(R.string.section_about));
         LinearLayout about = group();
         action(about, getString(R.string.action_setup_guide), ROW, () -> guide(getString(R.string.asset_guide), getString(R.string.title_guide)));
@@ -440,6 +449,21 @@ public final class MainActivity extends Activity {
             s.scheduled = i != 0; s.intervalHours = i == 1 ? 6 : i == 2 ? 12 : 24;
             if (!s.scheduled) s.automatic = false;
         })).show();
+    }
+    private void languageDialog() {
+        String[] values = {AppPrefs.LANG_SYSTEM, AppPrefs.LANG_ZH, AppPrefs.LANG_EN};
+        String[] labels = {getString(R.string.lang_system), getString(R.string.lang_zh), getString(R.string.lang_en)};
+        String current = AppPrefs.language(this);
+        int checked = AppPrefs.LANG_ZH.equals(current) ? 1 : AppPrefs.LANG_EN.equals(current) ? 2 : 0;
+        new AlertDialog.Builder(this).setTitle(R.string.dialog_language_title)
+                .setSingleChoiceItems(labels, checked, (d, i) -> {
+                    d.dismiss();
+                    if (!values[i].equals(current)) {
+                        AppPrefs.setLanguage(this, values[i]);
+                        recreate();
+                    }
+                })
+                .setNegativeButton(R.string.action_cancel, null).show();
     }
     private void autoDialog() {
         if (state.automatic) { mutate(s -> s.automatic = false); return; }

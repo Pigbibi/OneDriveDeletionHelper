@@ -102,6 +102,12 @@
     <string name="dialog_background_message">Allow notifications in app settings and adjust background or battery optimization limits as needed. Some devices also have an auto-start toggle whose label varies by system. The OS may still defer background checks; open the app to run a manual check.</string>
     <string name="action_open_app_settings">Open app settings</string>
     <string name="cleanup_auto_hint">Auto cleanup only handles files marked as trashed by the system for two consecutive checks and at least 24 hours. Files that simply disappeared still require manual confirmation.</string>
+    <string name="section_appearance_language">Appearance &amp; language</string>
+    <string name="action_language">Language: %1$s</string>
+    <string name="dialog_language_title">Language</string>
+    <string name="lang_system">Follow system</string>
+    <string name="lang_zh">中文</string>
+    <string name="lang_en">English</string>
     <string name="section_about">About PhotoKeep</string>
     <string name="action_setup_guide">Setup &amp; connection guide</string>
     <string name="title_guide">User Guide</string>
