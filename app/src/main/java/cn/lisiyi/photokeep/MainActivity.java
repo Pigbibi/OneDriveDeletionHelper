@@ -625,10 +625,10 @@ public final class MainActivity extends Activity {
         parent.addView(row, new LinearLayout.LayoutParams(-1, -2));
     }
     private void statusLine(LinearLayout parent, String title, String value, int valueColor, boolean separated) {
-        LinearLayout row = new LinearLayout(this); row.setPadding(0,dp(14),0,dp(14));
+        LinearLayout row = new LinearLayout(this); row.setPadding(0,dp(10),0,dp(10));
         TextView label = new TextView(this); label.setText(title); label.setTextColor(muted); label.setTextSize(14); row.addView(label, new LinearLayout.LayoutParams(dp(84),-2));
         TextView detail = new TextView(this); detail.setText(value); detail.setTextColor(valueColor); detail.setTextSize(15); row.addView(detail,new LinearLayout.LayoutParams(0,-2,1)); parent.addView(row);
-        if (separated) { View line = new View(this); line.setBackgroundColor(divider); parent.addView(line,new LinearLayout.LayoutParams(-1,dp(1))); }
+        if (separated) { View line = new View(this); line.setBackgroundColor(divider); LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(-1,dp(1)); lineParams.setMargins(dp(84),0,0,0); parent.addView(line,lineParams); }
     }
     private void section(String title) {
         TextView label = new TextView(this); label.setText(title); label.setTextSize(14); label.setTextColor(primary);
